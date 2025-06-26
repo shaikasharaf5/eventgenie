@@ -316,7 +316,7 @@ function Services({ selectedServices, toggleService }) {
                         padding: '24px',
                         height: 'fit-content',
                         position: 'sticky',
-                        top: '20%',
+                        top: '13%',
                     }}>
                         <h3 style={{
                             margin: '0 0 20px 0',
@@ -413,6 +413,71 @@ function Services({ selectedServices, toggleService }) {
 
                             </div>
                         )}
+                        {/* Food Type Filter */}
+                        {activeCategory === 'catering' && (
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{
+                                    fontWeight: 500,
+                                    display: 'block',
+                                    marginBottom: '12px',
+                                    color: '#555'
+                                }}>
+                                    <i className="fas fa-utensils" style={{ marginRight: '4px' }}></i>
+                                    Food Type
+                                </label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                        <input
+                                            type="radio"
+                                            name="foodType"
+                                            value="veg"
+                                            checked={foodType === 'veg'}
+                                            onChange={(e) => handleFoodType(e.target.value)}
+                                            style={{ marginRight: '8px' }}
+                                        />
+                                        <i className="fas fa-leaf" style={{ color: '#4caf50', marginRight: '6px' }}></i>
+                                        Vegetarian
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                        <input
+                                            type="radio"
+                                            name="foodType"
+                                            value="nonveg"
+                                            checked={foodType === 'nonveg'}
+                                            onChange={(e) => handleFoodType(e.target.value)}
+                                            style={{ marginRight: '8px' }}
+                                        />
+                                        <i className="fas fa-drumstick-bite" style={{ color: '#f44336', marginRight: '6px' }}></i>
+                                        Non-Vegetarian
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                        <input
+                                            type="radio"
+                                            name="foodType"
+                                            value="both"
+                                            checked={foodType === 'both'}
+                                            onChange={(e) => handleFoodType(e.target.value)}
+                                            style={{ marginRight: '8px' }}
+                                        />
+                                        <i className="fas fa-utensils" style={{ color: '#ff9800', marginRight: '6px' }}></i>
+                                        Veg & Non-Veg
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                        <input
+                                            type="radio"
+                                            name="foodType"
+                                            value="all"
+                                            checked={foodType === 'all'}
+                                            onChange={(e) => handleFoodType(e.target.value)}
+                                            style={{ marginRight: '8px' }}
+                                        />
+                                        <i class="fa-solid fa-bowl-rice" style={{ color: 'rgb(21, 58, 122)', marginRight: '6px' }}></i>
+                                        All
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Price Filter */}
                         <div style={{ marginBottom: '24px' }}>
                             <label style={{
@@ -485,60 +550,6 @@ function Services({ selectedServices, toggleService }) {
                                 />
                             </div>
                         </div>
-
-                        {/* Food Type Filter */}
-                        {activeCategory === 'catering' && (
-                            <div style={{ marginBottom: '24px' }}>
-                                <label style={{
-                                    fontWeight: 500,
-                                    display: 'block',
-                                    marginBottom: '12px',
-                                    color: '#555'
-                                }}>
-                                    <i className="fas fa-utensils" style={{ marginRight: '4px' }}></i>
-                                    Food Type
-                                </label>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                        <input
-                                            type="radio"
-                                            name="foodType"
-                                            value="veg"
-                                            checked={foodType === 'veg'}
-                                            onChange={(e) => handleFoodType(e.target.value)}
-                                            style={{ marginRight: '8px' }}
-                                        />
-                                        <i className="fas fa-leaf" style={{ color: '#4caf50', marginRight: '6px' }}></i>
-                                        Vegetarian
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                        <input
-                                            type="radio"
-                                            name="foodType"
-                                            value="nonveg"
-                                            checked={foodType === 'nonveg'}
-                                            onChange={(e) => handleFoodType(e.target.value)}
-                                            style={{ marginRight: '8px' }}
-                                        />
-                                        <i className="fas fa-drumstick-bite" style={{ color: '#f44336', marginRight: '6px' }}></i>
-                                        Non-Vegetarian
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                        <input
-                                            type="radio"
-                                            name="foodType"
-                                            value="all"
-                                            checked={foodType === 'all'}
-                                            onChange={(e) => handleFoodType(e.target.value)}
-                                            style={{ marginRight: '8px' }}
-                                        />
-                                        <i className="fas fa-utensils" style={{ color: '#ff9800', marginRight: '6px' }}></i>
-                                        Both
-                                    </label>
-                                </div>
-                            </div>
-                        )}
-
 
 
                         {/* Clear Filters Button */}

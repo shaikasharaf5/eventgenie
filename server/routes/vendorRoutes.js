@@ -200,7 +200,7 @@ router.get('/services/:vendorId', async (req, res) => {
 // Add New Service (Vendor only)
 router.post('/services/:vendorId', async (req, res) => {
     try {
-        const { name, provider, price, category, images, description, address } = req.body;
+        const { name, provider, price, category, foodType, images, description, address } = req.body;
         const { vendorId } = req.params;
 
         // Check if vendor exists
@@ -220,6 +220,7 @@ router.post('/services/:vendorId', async (req, res) => {
             vendorUsername: vendor.username,
             price,
             category,
+            foodType: foodType || 'both',
             images,
             description,
             address
@@ -239,7 +240,7 @@ router.post('/services/:vendorId', async (req, res) => {
 // Update Service (Vendor ownership check)
 router.put('/services/:vendorId/:serviceId', async (req, res) => {
     try {
-        const { name, provider, price, category, images, description, address } = req.body;
+        const { name, provider, price, category, foodType, images, description, address } = req.body;
         const { vendorId, serviceId } = req.params;
 
         // Check if vendor exists
@@ -266,6 +267,7 @@ router.put('/services/:vendorId/:serviceId', async (req, res) => {
         if (provider) updateData.provider = provider;
         if (price) updateData.price = price;
         if (category) updateData.category = category;
+        if (foodType) updateData.foodType = foodType;
         if (images) updateData.images = images;
         if (description) updateData.description = description;
         if (address) updateData.address = address;
