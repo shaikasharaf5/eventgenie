@@ -1255,13 +1255,13 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                                                 <div style={{ textAlign: 'right' }}>
                                                     <span style={{
                                                         padding: '6px 12px',
-                                                        backgroundColor: '#e8f5e8',
+                                                        backgroundColor: booking.status === 'canceled' ? '#f8d7da' : '#e8f5e8',
                                                         borderRadius: '20px',
                                                         fontSize: '0.9rem',
-                                                        color: '#2d5a2d',
+                                                        color: booking.status === 'canceled' ? '#d9534f' : '#2d5a2d',
                                                         fontWeight: '500'
                                                     }}>
-                                                        Confirmed
+                                                        {booking.status === 'canceled' ? 'Canceled' : 'Confirmed'}
                                                     </span>
                                                 </div>
                                             </div>

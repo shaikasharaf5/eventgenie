@@ -678,14 +678,20 @@ function Profile({ customer, logout, toggleService }) {
                                                         month: 'long',
                                                         day: 'numeric'
                                                     }) : 'Date not specified';
+                                                    const isCanceled = booking.status === 'canceled';
+                                                    const eventDate = new Date(booking.bookedForDate);
+                                                    const now = new Date();
+                                                    const diffMs = eventDate - now;
+                                                    const diffHours = diffMs / (1000 * 60 * 60);
+                                                    const canCancel = !isCanceled && diffHours > 48;
 
                                                     return (
                                                         <div key={booking.bookingId || `${booking.serviceId}-${booking.bookedForDate}`} className="service-card" style={{
-                                                            background: '#fff',
+                                                            background: isCanceled ? '#ffeaea' : '#fff',
                                                             borderRadius: '12px',
                                                             boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                                                             overflow: 'hidden',
-                                                            border: '1px solid #e9ecef',
+                                                            border: isCanceled ? '2px solid #d9534f' : '1px solid #e9ecef',
                                                             width: '100%',
                                                             minWidth: '220px',
                                                             maxWidth: '320px',
@@ -839,6 +845,52 @@ function Profile({ customer, logout, toggleService }) {
                                                                         }}>
                                                                             <i className="fas fa-check"></i> Reviewed
                                                                         </span>
+                                                                    )}
+                                                                </div>
+                                                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                    {isCanceled ? (
+                                                                        <span style={{ color: '#d9534f', fontWeight: 'bold' }}>Canceled</span>
+                                                                    ) : (
+                                                                        <span style={{ color: '#28a745', fontWeight: 'bold' }}>Booked</span>
+                                                                    )}
+                                                                    {canCancel && (
+                                                                        <button
+                                                                            style={{
+                                                                                background: '#d9534f',
+                                                                                color: '#fff',
+                                                                                border: 'none',
+                                                                                borderRadius: '6px',
+                                                                                padding: '6px 16px',
+                                                                                fontWeight: 'bold',
+                                                                                cursor: 'pointer',
+                                                                                marginLeft: '10px'
+                                                                            }}
+                                                                            onClick={async () => {
+                                                                                try {
+                                                                                    setLoading(true);
+                                                                                    const response = await fetch(`http://localhost:5001/api/customers/cancel-booking/${booking.serviceId}/${booking.bookingId}`, {
+                                                                                        method: 'POST',
+                                                                                    });
+                                                                                    if (response.ok) {
+                                                                                        showPopup('Booking canceled successfully', 'success');
+                                                                                        // Refresh bookings
+                                                                                        await fetchDetailedBookings();
+                                                                                    } else {
+                                                                                        const errorData = await response.json();
+                                                                                        console.error('Cancel booking error:', response.status, errorData);
+                                                                                        showPopup(errorData.message || 'Failed to cancel booking', 'error');
+                                                                                    }
+                                                                                } catch (error) {
+                                                                                    console.error('Network or fetch error while canceling booking:', error);
+                                                                                    showPopup('Network error while canceling booking', 'error');
+                                                                                } finally {
+                                                                                    setLoading(false);
+                                                                                }
+                                                                            }}
+                                                                            disabled={loading}
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
                                                                     )}
                                                                 </div>
                                                             </div>

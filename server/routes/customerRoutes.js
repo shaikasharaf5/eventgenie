@@ -200,7 +200,7 @@ router.post('/book-service/:customerId/:serviceId', async (req, res) => {
 
         // Check if the date is already booked for this specific service
         const isAlreadyBooked = service.bookings.some(
-            (booking) => booking.bookedForDate === bookedForDate
+            (booking) => booking.bookedForDate === bookedForDate && booking.status !== 'canceled'
         );
 
         if (isAlreadyBooked) {
@@ -215,7 +215,7 @@ router.post('/book-service/:customerId/:serviceId', async (req, res) => {
         // Double-check availability by re-fetching the service
         const freshService = await Service.findById(serviceId);
         const isStillAvailable = !freshService.bookings.some(
-            (booking) => booking.bookedForDate === bookedForDate
+            (booking) => booking.bookedForDate === bookedForDate && booking.status !== 'canceled'
         );
 
         if (!isStillAvailable) {
@@ -393,6 +393,7 @@ router.get('/detailed-bookings/:customerId', async (req, res) => {
                     description: service.description,
                     bookedForDate: booking.bookedForDate,
                     dateBooked: booking.dateBooked,
+                    status: booking.status, // Add status here
                     hasReviewed: service.reviews.some(review => review.user === customer.username)
                 };
 
@@ -488,7 +489,7 @@ router.post('/bulk-book-services/:customerId', async (req, res) => {
 
                 // Check if the date is already booked for this specific service
                 const isAlreadyBooked = service.bookings.some(
-                    (booking) => booking.bookedForDate === bookedForDate
+                    (booking) => booking.bookedForDate === bookedForDate && booking.status !== 'canceled'
                 );
 
                 if (isAlreadyBooked) {
@@ -550,7 +551,7 @@ router.post('/bulk-book-services/:customerId', async (req, res) => {
 
                 // Double-check availability (in case another user booked it)
                 const isStillAvailable = !freshService.bookings.some(
-                    (booking) => booking.bookedForDate === bookedForDate
+                    (booking) => booking.bookedForDate === bookedForDate && booking.status !== 'canceled'
                 );
 
                 if (!isStillAvailable) {
@@ -619,6 +620,40 @@ router.post('/bulk-book-services/:customerId', async (req, res) => {
 
     } catch (error) {
         console.error('Error in bulk booking:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Cancel a Booking
+router.post('/cancel-booking/:serviceId/:bookingId', async (req, res) => {
+    try {
+        const { serviceId, bookingId } = req.params;
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+        // Find the booking
+        const booking = service.bookings.id(bookingId);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+        // Check if already canceled
+        if (booking.status === 'canceled') {
+            return res.status(400).json({ message: 'Booking already canceled' });
+        }
+        // Check if event is more than 48 hours away
+        const eventDate = new Date(booking.bookedForDate);
+        const now = new Date();
+        const diffMs = eventDate - now;
+        const diffHours = diffMs / (1000 * 60 * 60);
+        if (diffHours < 48) {
+            return res.status(400).json({ message: 'Cannot cancel booking within 48 hours of the event date' });
+        }
+        // Cancel the booking
+        booking.status = 'canceled';
+        await service.save();
+        res.json({ message: 'Booking canceled successfully', booking });
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
