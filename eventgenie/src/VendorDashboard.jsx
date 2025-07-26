@@ -373,7 +373,7 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
     };
 
     return (
-        <div className="vendor-dashboard-body">
+        <div className="vendor-dashboard-body" >
             <Navbar
                 isVendorLoggedIn={isVendorLoggedIn}
                 currentVendor={vendor}
@@ -384,10 +384,10 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
             <div className="dashboard-content" style={{ marginLeft: 0, marginTop: '90px' }}>
                 {error && (
                     <div style={{
+                        marginLeft: '4%', marginRight: '4%',
                         background: '#f8d7da',
                         color: '#721c24',
                         padding: '10px 20px',
-                        margin: '20px',
                         borderRadius: '8px',
                         border: '1px solid #f5c6cb'
                     }}>
@@ -396,7 +396,7 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 )}
 
                 {vendorTab === 'services' && (
-                    <section className="dashboard-section active">
+                    <section className="dashboard-section active" style={{ marginLeft: '5%', marginRight: '5%' }}>
                         <div className="section-header">
                             <h2>My Services</h2>
                             <button className="btn primary-btn" onClick={() => {
@@ -569,7 +569,7 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 )}
 
                 {vendorTab === 'add' && (
-                    <section className="dashboard-section active">
+                    <section className="dashboard-section active" style={{ marginLeft: '5%', marginRight: '5%' }}>
                         <div className="section-header">
                             <h2>{editServiceId ? 'Edit Service' : 'Add New Service'}</h2>
                             <button className="btn secondary-btn" onClick={() => setVendorTab('services')}>
@@ -731,7 +731,7 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 )}
 
                 {vendorTab === 'profile' && (
-                    <section className="dashboard-section active">
+                    <section className="dashboard-section active" style={{ marginLeft: '5%', marginRight: '5%' }}>
                         <div className="container">
                             <h2 className="section-title">My Profile</h2>
 
@@ -1195,7 +1195,7 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 )}
 
                 {vendorTab === 'bookings' && (
-                    <section className="dashboard-section active">
+                    <section className="dashboard-section active" style={{ marginLeft: '5%', marginRight: '5%' }}>
                         <div className="section-header">
                             <h2>Customer Bookings</h2>
                         </div>
@@ -1451,7 +1451,7 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 )}
 
                 {vendorTab === 'block' && (
-                    <section className="dashboard-section active">
+                    <section className="dashboard-section active" style={{ marginLeft: '5%', marginRight: '5%' }}>
                         <div className="section-header">
                             <h2>Block Services</h2>
                             <p style={{ color: '#666', marginTop: '10px' }}>
@@ -1484,10 +1484,13 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [blockedMap, setBlockedMap] = useState({}); // {serviceId: [dates]}
+    const [blockedMap, setBlockedMap] = useState({});
+    const [calendarMonth, setCalendarMonth] = useState(() => {
+        const today = new Date();
+        return { year: today.getFullYear(), month: today.getMonth() };
+    });
 
     useEffect(() => {
-        // Build blockedMap from myServices
         const map = {};
         myServices.forEach(s => {
             map[s._id] = s.blockedDates || [];
@@ -1495,9 +1498,36 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
         setBlockedMap(map);
     }, [myServices]);
 
-    const handleDateChange = (dates) => {
-        setSelectedDates(dates.map(d => d.toISOString().slice(0, 10)));
+    // --- Custom Calendar Logic with Month Navigation ---
+    const { year, month } = calendarMonth;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const today = new Date();
+
+    const getDateKey = (d) => d.toISOString().slice(0, 10);
+    const isSelected = (d) => selectedDates.includes(getDateKey(d));
+    const handleDateClick = (d) => {
+        const key = getDateKey(d);
+        setSelectedDates(prev =>
+            prev.includes(key) ? prev.filter(date => date !== key) : [...prev, key]
+        );
     };
+    const handlePrevMonth = () => {
+        setCalendarMonth(prev => {
+            const newMonth = prev.month - 1;
+            if (newMonth < 0) return { year: prev.year - 1, month: 11 };
+            return { year: prev.year, month: newMonth };
+        });
+    };
+    const handleNextMonth = () => {
+        setCalendarMonth(prev => {
+            const newMonth = prev.month + 1;
+            if (newMonth > 11) return { year: prev.year + 1, month: 0 };
+            return { year: prev.year, month: newMonth };
+        });
+    };
+    // --- End Custom Calendar Logic ---
 
     const handleServiceToggle = (serviceId) => {
         setSelectedServiceIds(prev =>
@@ -1548,62 +1578,84 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
         }
     };
 
+    // --- Layout ---
     return (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', marginTop: '30px' }}>
-            <div style={{ flex: 1, minWidth: '340px', background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ marginBottom: '18px', color: '#333' }}>Select Dates</h3>
-                <Calendar
-                    multiSelect
-                    dates={selectedDates.map(d => new Date(d))}
-                    onChange={handleDateChange}
-                    minDate={new Date()}
-                />
-                <div style={{ marginTop: '18px', color: '#888', fontSize: '0.95rem' }}>
-                    {selectedDates.length > 0 ? `Selected: ${selectedDates.join(', ')}` : 'No dates selected.'}
+        <div className="block-section-outer">
+            <div className="block-section-layout">
+                <div className="block-calendar-container">
+                    <h3>Select Dates</h3>
+                    <div className="custom-calendar">
+                        <div className="calendar-header">
+                            <button className="calendar-nav-btn" onClick={handlePrevMonth}>&lt;</button>
+                            <span>{new Date(year, month).toLocaleString('default', { month: 'long' })} {year}</span>
+                            <button className="calendar-nav-btn" onClick={handleNextMonth}>&gt;</button>
+                        </div>
+                        <div className="calendar-grid">
+                            {weekDays.map((d, i) => (
+                                <div key={i} className="calendar-weekday">{d}</div>
+                            ))}
+                            {Array(firstDay).fill(null).map((_, i) => (
+                                <div key={'empty-' + i} className="calendar-empty"></div>
+                            ))}
+                            {Array(daysInMonth).fill(null).map((_, i) => {
+                                const dateObj = new Date(year, month, i + 1);
+                                const key = getDateKey(dateObj);
+                                return (
+                                    <div
+                                        key={key}
+                                        className={`calendar-day${isSelected(dateObj) ? ' selected' : ''}${dateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate()) ? ' calendar-day-disabled' : ''}`}
+                                        onClick={() => dateObj >= new Date(today.getFullYear(), today.getMonth(), today.getDate()) && handleDateClick(dateObj)}
+                                    >
+                                        <span>{i + 1}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    <div className="calendar-selected-info">
+                        {selectedDates.length > 0 ? `Selected: ${selectedDates.join(', ')}` : 'No dates selected.'}
+                    </div>
+                </div>
+                <div className="block-services-container">
+                    <h3>Select Services</h3>
+                    <div className="block-services-list">
+                        {myServices.length === 0 ? <div>No services found.</div> : myServices.map(service => (
+                            <label key={service._id} className="block-service-label">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedServiceIds.includes(service._id)}
+                                    onChange={() => handleServiceToggle(service._id)}
+                                />
+                                {service.name} <span className="block-service-category">({service.category})</span>
+                            </label>
+                        ))}
+                    </div>
+                    <button
+                        className="btn primary-btn"
+                        onClick={blockServices}
+                        disabled={loading}
+                    >
+                        {loading ? 'Blocking...' : 'Block Selected'}
+                    </button>
+                    {error && <div className="block-error">{error}</div>}
+                    {success && <div className="block-success">{success}</div>}
                 </div>
             </div>
-            <div style={{ flex: 1, minWidth: '340px', background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ marginBottom: '18px', color: '#333' }}>Select Services</h3>
-                <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+            <div className="block-list-container">
+                <h3>Blocked Services/Dates</h3>
+                <div className="block-list">
                     {myServices.length === 0 ? <div>No services found.</div> : myServices.map(service => (
-                        <label key={service._id} style={{ display: 'block', marginBottom: '10px', cursor: 'pointer' }}>
-                            <input
-                                type="checkbox"
-                                checked={selectedServiceIds.includes(service._id)}
-                                onChange={() => handleServiceToggle(service._id)}
-                                style={{ marginRight: '10px' }}
-                            />
-                            {service.name} <span style={{ color: '#888', fontSize: '0.9rem' }}>({service.category})</span>
-                        </label>
-                    ))}
-                </div>
-                <button
-                    className="btn primary-btn"
-                    style={{ marginTop: '24px', width: '100%' }}
-                    onClick={blockServices}
-                    disabled={loading}
-                >
-                    {loading ? 'Blocking...' : 'Block Selected'}
-                </button>
-                {error && <div style={{ color: '#c33', marginTop: '10px' }}>{error}</div>}
-                {success && <div style={{ color: '#2e7d32', marginTop: '10px' }}>{success}</div>}
-            </div>
-            <div style={{ flex: 1, minWidth: '340px', background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ marginBottom: '18px', color: '#333' }}>Blocked Services/Dates</h3>
-                <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
-                    {myServices.length === 0 ? <div>No services found.</div> : myServices.map(service => (
-                        <div key={service._id} style={{ marginBottom: '18px' }}>
-                            <div style={{ fontWeight: 'bold', color: '#444' }}>{service.name}</div>
-                            <ul style={{ margin: '6px 0 0 0', padding: 0, listStyle: 'none' }}>
+                        <div key={service._id} className="block-list-service">
+                            <div className="block-list-service-name">{service.name}</div>
+                            <ul className="block-list-dates">
                                 {(blockedMap[service._id] || []).length === 0 ? (
-                                    <li style={{ color: '#888', fontSize: '0.95rem' }}>No blocked dates.</li>
+                                    <li className="block-list-no-dates">No blocked dates.</li>
                                 ) : (
                                     blockedMap[service._id].map(date => (
-                                        <li key={date} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                                            <span style={{ marginRight: '10px' }}>{date}</span>
+                                        <li key={date} className="block-list-date-item">
+                                            <span>{date}</span>
                                             <button
-                                                className="btn secondary-btn"
-                                                style={{ padding: '2px 10px', fontSize: '0.85rem' }}
+                                                className="btn secondary-btn block-unblock-btn"
                                                 onClick={() => unblockServiceDate(service._id, date)}
                                                 disabled={loading}
                                             >

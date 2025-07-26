@@ -22,13 +22,13 @@ function Navbar({ isLoggedIn, isVendorLoggedIn, currentCustomer, currentVendor, 
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className={vendorTab === 'profile' ? 'active' : ''} onClick={e => { e.preventDefault(); setVendorTab('profile'); }}>
-                                    <i className="fas fa-user"></i> Profile
+                                <a href="#" className={vendorTab === 'block' ? 'active' : ''} onClick={e => { e.preventDefault(); setVendorTab('block'); }}>
+                                    <i className="fas fa-ban"></i> Block Services
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className={vendorTab === 'block' ? 'active' : ''} onClick={e => { e.preventDefault(); setVendorTab('block'); }}>
-                                    <i className="fas fa-ban"></i> Block Services
+                                <a href="#" className={vendorTab === 'profile' ? 'active' : ''} onClick={e => { e.preventDefault(); setVendorTab('profile'); }}>
+                                    <i className="fas fa-user"></i> Profile
                                 </a>
                             </li>
                         </>
