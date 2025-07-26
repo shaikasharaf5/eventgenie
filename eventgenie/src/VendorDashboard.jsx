@@ -506,64 +506,38 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                                             borderRadius: '12px',
                                             boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                                             overflow: 'hidden',
-                                            transition: 'all 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            height: '100%'
                                         }}
                                         onClick={() => openServiceModal(service)}
                                     >
-                                        <div className="service-image-container" style={{
-                                            width: '100%',
-                                            height: '200px',
-                                            overflow: 'hidden'
-                                        }}>
+                                        <div className="service-image-container" style={{ width: '100%', height: '200px', overflow: 'hidden' }}>
                                             <img
                                                 src={service.images && service.images.length > 0 ? service.images[0] : service.image}
                                                 alt={service.name}
                                                 className="service-image"
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover'
-                                                }}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 onError={(e) => {
                                                     e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
                                                 }}
                                             />
                                         </div>
-                                        <div className="service-content" style={{ padding: '20px' }}>
-                                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', fontWeight: '600' }}>
-                                                {service.name}
-                                            </h3>
-                                            <p style={{ color: '#666', margin: '0 0 10px 0', fontSize: '0.9rem' }}>
-                                                {service.provider}
-                                            </p>
+                                        <div className="service-content" style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', fontWeight: '600' }}>{service.name}</h3>
+                                            <p style={{ color: '#666', margin: '0 0 10px 0', fontSize: '0.9rem' }}>{service.provider}</p>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                                <span style={{
-                                                    background: '#e3f2fd',
-                                                    color: '#1976d2',
-                                                    padding: '4px 8px',
-                                                    borderRadius: '4px',
-                                                    fontSize: '0.8rem'
-                                                }}>
-                                                    {service.category}
-                                                </span>
-                                                <span style={{ fontWeight: '600', color: '#2e7d32' }}>
-                                                    ₹{service.price}
-                                                </span>
+                                                <span style={{ background: '#e3f2fd', color: '#1976d2', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>{service.category}</span>
+                                                <span style={{ fontWeight: '600', color: '#2e7d32' }}> ₹{service.price}</span>
                                             </div>
                                             {service.reviews && service.reviews.length > 0 && (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                     {renderStars(service.reviews.reduce((acc, review) => acc + review.rating, 0) / service.reviews.length)}
-                                                    <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                                                        ({service.reviews.length} reviews)
-                                                    </span>
+                                                    <span style={{ fontSize: '0.8rem', color: '#666' }}>({service.reviews.length} reviews)</span>
                                                 </div>
                                             )}
-                                            <div style={{
-                                                display: 'flex',
-                                                gap: '10px',
-                                                marginTop: '15px',
-                                                justifyContent: 'flex-end'
-                                            }}>
+                                            <div style={{ marginTop: 'auto', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                                                 <button
                                                     className="btn secondary-btn"
                                                     onClick={(e) => {
@@ -1234,134 +1208,231 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                         }}>
                             {bookings.length > 0 ? (
                                 <div className="bookings-list">
-                                    {bookings.map((booking, index) => (
-                                        <div key={index} className="booking-item" style={{
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '12px',
-                                            padding: '24px',
-                                            marginBottom: '20px',
-                                            background: '#fafafa'
-                                        }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                                <div>
-                                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: '#333' }}>
-                                                        Booking #{index + 1}
-                                                    </h4>
-                                                    <p style={{ margin: '0', fontSize: '0.9rem', color: '#666' }}>
-                                                        <i className="fas fa-calendar" style={{ marginRight: '4px' }}></i>
-                                                        Booked for: {booking.bookedForDate}
-                                                    </p>
+                                    {bookings.map((booking, index) => {
+                                        const getStatusColor = (status) => {
+                                            switch (status) {
+                                                case 'pending':
+                                                    return { bg: '#fff3cd', color: '#856404', border: '#ffeaa7' };
+                                                case 'confirmed':
+                                                    return { bg: '#d4edda', color: '#155724', border: '#c3e6cb' };
+                                                case 'cancelled':
+                                                    return { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' };
+                                                default:
+                                                    return { bg: '#e2e3e5', color: '#383d41', border: '#d6d8db' };
+                                            }
+                                        };
+
+                                        const statusStyle = getStatusColor(booking.status);
+
+                                        return (
+                                            <div key={index} className="booking-item" style={{
+                                                border: `1px solid ${statusStyle.border}`,
+                                                borderRadius: '12px',
+                                                padding: '24px',
+                                                marginBottom: '20px',
+                                                background: statusStyle.bg
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                                    <div>
+                                                        <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: '#333' }}>
+                                                            Booking #{index + 1}
+                                                        </h4>
+                                                        <p style={{ margin: '0', fontSize: '0.9rem', color: '#666' }}>
+                                                            <i className="fas fa-calendar" style={{ marginRight: '4px' }}></i>
+                                                            Booked for: {booking.bookedForDate}
+                                                        </p>
+                                                    </div>
+                                                    <div style={{ textAlign: 'right' }}>
+                                                        <span style={{
+                                                            padding: '6px 12px',
+                                                            backgroundColor: statusStyle.bg,
+                                                            borderRadius: '20px',
+                                                            fontSize: '0.9rem',
+                                                            color: statusStyle.color,
+                                                            fontWeight: '500',
+                                                            border: `1px solid ${statusStyle.border}`
+                                                        }}>
+                                                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <span style={{
-                                                        padding: '6px 12px',
-                                                        backgroundColor: booking.status === 'canceled' ? '#f8d7da' : '#e8f5e8',
-                                                        borderRadius: '20px',
-                                                        fontSize: '0.9rem',
-                                                        color: booking.status === 'canceled' ? '#d9534f' : '#2d5a2d',
-                                                        fontWeight: '500'
+
+                                                {/* Customer Details */}
+                                                <div style={{
+                                                    background: '#fff',
+                                                    padding: '16px',
+                                                    borderRadius: '8px',
+                                                    marginBottom: '16px',
+                                                    border: '1px solid #e9ecef'
+                                                }}>
+                                                    <h5 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '1rem' }}>
+                                                        <i className="fas fa-user" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
+                                                        Customer Details
+                                                    </h5>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Name
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
+                                                                {booking.customerName}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Email
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
+                                                                {booking.customerEmail}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Phone
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
+                                                                {booking.customerPhone}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Booking Date
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
+                                                                {new Date(booking.dateBooked).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Service Details */}
+                                                <div style={{
+                                                    background: '#fff',
+                                                    padding: '16px',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid #e9ecef'
+                                                }}>
+                                                    <h5 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '1rem' }}>
+                                                        <i className="fas fa-tag" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
+                                                        Service Details
+                                                    </h5>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Service Name
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#333', fontWeight: '600' }}>
+                                                                {booking.serviceName}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Category
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
+                                                                {booking.serviceCategory}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Price
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '1rem', color: '#6c63ff', fontWeight: '600' }}>
+                                                                ₹{booking.servicePrice}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
+                                                                Service ID
+                                                            </label>
+                                                            <p style={{ margin: '0', fontSize: '0.9rem', color: '#666', fontFamily: 'monospace' }}>
+                                                                {booking.serviceId}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons for Pending Bookings */}
+                                                {booking.status === 'pending' && (
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        gap: '12px',
+                                                        marginTop: '16px',
+                                                        justifyContent: 'flex-end'
                                                     }}>
-                                                        {booking.status === 'canceled' ? 'Canceled' : 'Confirmed'}
-                                                    </span>
-                                                </div>
+                                                        <button
+                                                            className="btn danger-btn"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    setLoading(true);
+                                                                    const response = await fetch(`http://localhost:5001/api/vendors/reject-booking/${vendor.id}/${booking.serviceId}/${booking._id}`, {
+                                                                        method: 'POST',
+                                                                        headers: {
+                                                                            'Content-Type': 'application/json',
+                                                                        }
+                                                                    });
+                                                                    if (response.ok) {
+                                                                        alert('Booking rejected successfully');
+                                                                        fetchVendorBookings(); // Refresh bookings
+                                                                    } else {
+                                                                        const errorData = await response.json();
+                                                                        alert(errorData.message || 'Failed to reject booking');
+                                                                    }
+                                                                } catch (error) {
+                                                                    alert('Network error. Please try again.');
+                                                                } finally {
+                                                                    setLoading(false);
+                                                                }
+                                                            }}
+                                                            disabled={loading}
+                                                            style={{
+                                                                padding: '10px 20px',
+                                                                fontSize: '0.9rem',
+                                                                fontWeight: '500'
+                                                            }}
+                                                        >
+                                                            <i className="fas fa-times" style={{ marginRight: '6px' }}></i>
+                                                            Reject
+                                                        </button>
+                                                        <button
+                                                            className="btn primary-btn"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    setLoading(true);
+                                                                    const response = await fetch(`http://localhost:5001/api/vendors/accept-booking/${vendor.id}/${booking.serviceId}/${booking._id}`, {
+                                                                        method: 'POST',
+                                                                        headers: {
+                                                                            'Content-Type': 'application/json',
+                                                                        }
+                                                                    });
+                                                                    if (response.ok) {
+                                                                        alert('Booking accepted successfully');
+                                                                        fetchVendorBookings(); // Refresh bookings
+                                                                    } else {
+                                                                        const errorData = await response.json();
+                                                                        alert(errorData.message || 'Failed to accept booking');
+                                                                    }
+                                                                } catch (error) {
+                                                                    alert('Network error. Please try again.');
+                                                                } finally {
+                                                                    setLoading(false);
+                                                                }
+                                                            }}
+                                                            disabled={loading}
+                                                            style={{
+                                                                padding: '10px 20px',
+                                                                fontSize: '0.9rem',
+                                                                fontWeight: '500'
+                                                            }}
+                                                        >
+                                                            <i className="fas fa-check" style={{ marginRight: '6px' }}></i>
+                                                            Accept
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
-
-                                            {/* Customer Details */}
-                                            <div style={{
-                                                background: '#fff',
-                                                padding: '16px',
-                                                borderRadius: '8px',
-                                                marginBottom: '16px',
-                                                border: '1px solid #e9ecef'
-                                            }}>
-                                                <h5 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '1rem' }}>
-                                                    <i className="fas fa-user" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
-                                                    Customer Details
-                                                </h5>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Name
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
-                                                            {booking.customerName}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Email
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
-                                                            {booking.customerEmail}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Phone
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
-                                                            {booking.customerPhone}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Booking Date
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
-                                                            {new Date(booking.dateBooked).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Service Details */}
-                                            <div style={{
-                                                background: '#fff',
-                                                padding: '16px',
-                                                borderRadius: '8px',
-                                                border: '1px solid #e9ecef'
-                                            }}>
-                                                <h5 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '1rem' }}>
-                                                    <i className="fas fa-tag" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
-                                                    Service Details
-                                                </h5>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Service Name
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#333', fontWeight: '600' }}>
-                                                            {booking.serviceName}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Category
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#333' }}>
-                                                            {booking.serviceCategory}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Price
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '1rem', color: '#6c63ff', fontWeight: '600' }}>
-                                                            ₹{booking.servicePrice}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>
-                                                            Service ID
-                                                        </label>
-                                                        <p style={{ margin: '0', fontSize: '0.9rem', color: '#666', fontFamily: 'monospace' }}>
-                                                            {booking.serviceId}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div style={{

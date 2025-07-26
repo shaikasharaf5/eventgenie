@@ -686,7 +686,9 @@ function Services({ selectedServices, toggleService }) {
                                                             cursor: isAvailable ? 'pointer' : 'not-allowed',
                                                             opacity: isAvailable ? 1 : 0.8,
                                                             position: 'relative',
-                                                            // Add red border and background for booked services
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            height: '100%',
                                                             border: selectedDate && !isAvailable ? '2px solid #f44336' : undefined,
                                                             backgroundColor: selectedDate && !isAvailable ? '#fff5f5' : undefined,
                                                             boxShadow: selectedDate && !isAvailable ? '0 4px 12px rgba(244, 67, 54, 0.2)' : undefined
@@ -757,42 +759,26 @@ function Services({ selectedServices, toggleService }) {
                                                             )}
                                                         </div>
                                                         <div className="service-info" style={{
-                                                            // Add red text for booked services
-                                                            color: selectedDate && !isAvailable ? '#d32f2f' : undefined
+                                                            color: selectedDate && !isAvailable ? '#d32f2f' : undefined,
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            flex: 1,
+                                                            minHeight: 0
                                                         }}>
-                                                            <h3 className="service-name" style={{
-                                                                color: selectedDate && !isAvailable ? '#d32f2f' : undefined
-                                                            }}>
+                                                            <h3 className="service-name" style={{ color: selectedDate && !isAvailable ? '#d32f2f' : undefined }}>
                                                                 {service.name}
                                                             </h3>
-                                                            <p className="service-provider" style={{
-                                                                color: selectedDate && !isAvailable ? '#e57373' : undefined
-                                                            }}>
+                                                            <p className="service-provider" style={{ color: selectedDate && !isAvailable ? '#e57373' : undefined }}>
                                                                 by {service.provider}
                                                             </p>
-                                                            <div className="service-rating">
+                                                            <div className="service-rating" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                                 {renderStars(avgRating)}
-                                                                <span style={{
-                                                                    marginLeft: 4,
-                                                                    color: selectedDate && !isAvailable ? '#e57373' : '#888',
-                                                                    fontSize: '0.95em'
-                                                                }}>
-                                                                    {avgRating.toFixed(1)}
-                                                                </span>
+                                                                <span style={{ color: selectedDate && !isAvailable ? '#e57373' : '#888', fontSize: '0.95em' }}>{avgRating.toFixed(1)}</span>
                                                                 {service.reviews && service.reviews.length > 0 && (
-                                                                    <span style={{
-                                                                        marginLeft: 4,
-                                                                        color: selectedDate && !isAvailable ? '#e57373' : '#888',
-                                                                        fontSize: '0.9em'
-                                                                    }}>
-                                                                        ({service.reviews.length} reviews)
-                                                                    </span>
+                                                                    <span style={{ color: selectedDate && !isAvailable ? '#e57373' : '#888', fontSize: '0.9em' }}>({service.reviews.length} reviews)</span>
                                                                 )}
                                                             </div>
-                                                            <p className="service-price" style={{
-                                                                color: selectedDate && !isAvailable ? '#d32f2f' : undefined,
-                                                                fontWeight: selectedDate && !isAvailable ? '700' : undefined
-                                                            }}>
+                                                            <p className="service-price" style={{ color: selectedDate && !isAvailable ? '#d32f2f' : undefined, fontWeight: selectedDate && !isAvailable ? '700' : undefined }}>
                                                                 {formatPrice(service.price)}
                                                             </p>
 
@@ -818,13 +804,7 @@ function Services({ selectedServices, toggleService }) {
                                                             {isAvailable && (
                                                                 <button
                                                                     className="btn primary-btn"
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        marginTop: '12px',
-                                                                        padding: '12px',
-                                                                        fontSize: '1rem',
-                                                                        fontWeight: '500'
-                                                                    }}
+                                                                    style={{ width: '100%', marginTop: 4, padding: '12px', fontSize: '1rem', fontWeight: '500' }}
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         handleAddToCart(service);
@@ -839,15 +819,7 @@ function Services({ selectedServices, toggleService }) {
                                                             {selectedDate && !isAvailable && (
                                                                 <button
                                                                     className="btn secondary-btn"
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        marginTop: '12px',
-                                                                        padding: '12px',
-                                                                        fontSize: '1rem',
-                                                                        fontWeight: '500',
-                                                                        opacity: 0.6,
-                                                                        cursor: 'not-allowed'
-                                                                    }}
+                                                                    style={{ width: '100%', marginTop: 4, padding: '12px', fontSize: '1rem', fontWeight: '500', opacity: 0.6, cursor: 'not-allowed' }}
                                                                     disabled
                                                                 >
                                                                     <i className="fas fa-ban" style={{ marginRight: '8px' }}></i>

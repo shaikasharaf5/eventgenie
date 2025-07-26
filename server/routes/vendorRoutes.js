@@ -352,4 +352,110 @@ router.get('/bookings/:vendorId', async (req, res) => {
     }
 });
 
+// Accept a booking (Vendor only)
+router.post('/accept-booking/:vendorId/:serviceId/:bookingId', async (req, res) => {
+    try {
+        const { vendorId, serviceId, bookingId } = req.params;
+
+        // Check if vendor exists
+        const vendor = await Vendor.findById(vendorId);
+        if (!vendor) {
+            return res.status(404).json({ message: 'Vendor not found' });
+        }
+
+        // Check if service exists and belongs to vendor
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+
+        if (service.vendorUsername !== vendor.username) {
+            return res.status(403).json({
+                message: 'You can only manage bookings for your own services'
+            });
+        }
+
+        // Find the booking
+        const booking = service.bookings.id(bookingId);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Check if booking is pending
+        if (booking.status !== 'pending') {
+            return res.status(400).json({ 
+                message: `Booking cannot be accepted. Current status: ${booking.status}` 
+            });
+        }
+
+        // Accept the booking
+        booking.status = 'confirmed';
+        await service.save();
+
+        res.json({ 
+            message: 'Booking accepted successfully', 
+            booking: {
+                ...booking.toObject(),
+                serviceId: service._id,
+                serviceName: service.name
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Reject a booking (Vendor only)
+router.post('/reject-booking/:vendorId/:serviceId/:bookingId', async (req, res) => {
+    try {
+        const { vendorId, serviceId, bookingId } = req.params;
+
+        // Check if vendor exists
+        const vendor = await Vendor.findById(vendorId);
+        if (!vendor) {
+            return res.status(404).json({ message: 'Vendor not found' });
+        }
+
+        // Check if service exists and belongs to vendor
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+
+        if (service.vendorUsername !== vendor.username) {
+            return res.status(403).json({
+                message: 'You can only manage bookings for your own services'
+            });
+        }
+
+        // Find the booking
+        const booking = service.bookings.id(bookingId);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Check if booking is pending
+        if (booking.status !== 'pending') {
+            return res.status(400).json({ 
+                message: `Booking cannot be rejected. Current status: ${booking.status}` 
+            });
+        }
+
+        // Reject the booking
+        booking.status = 'cancelled';
+        await service.save();
+
+        res.json({ 
+            message: 'Booking rejected successfully', 
+            booking: {
+                ...booking.toObject(),
+                serviceId: service._id,
+                serviceName: service.name
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router; 

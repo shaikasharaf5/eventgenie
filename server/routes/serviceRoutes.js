@@ -66,7 +66,7 @@ router.get('/', async (req, res) => {
             services = services.map(service => {
                 // Check if the service is already booked for this date
                 const isBooked = service.bookings && service.bookings.some(booking =>
-                    booking.bookedForDate === date && booking.status !== 'canceled'
+                    booking.bookedForDate === date && booking.status !== 'cancelled'
                 );
 
                 console.log(`Service ${service.name}: isBooked = ${isBooked} for date ${date}`);

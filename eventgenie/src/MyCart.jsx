@@ -123,7 +123,7 @@ function MyCart({ selectedServices, clearSelectedServices, isLoggedIn, addBookin
                                     <div
                                         key={service._id || idx}
                                         className="service-card selected"
-                                        style={{ cursor: 'pointer' }}
+                                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', height: '100%' }}
                                         onClick={() => openServiceModal(service)}
                                     >
                                         <div className="service-image-container">
@@ -136,30 +136,28 @@ function MyCart({ selectedServices, clearSelectedServices, isLoggedIn, addBookin
                                                 }}
                                             />
                                         </div>
-                                        <div className="service-info">
+                                        <div className="service-info" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                                             <h3 className="service-name">{service.name}</h3>
                                             <p className="service-provider">by {service.provider}</p>
-                                            <div className="service-rating">
+                                            <div className="service-rating" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                 {renderStars(avgRating)}
-                                                <span style={{ marginLeft: 4, color: '#888', fontSize: '0.95em' }}>
-                                                    {avgRating.toFixed(1)}
-                                                </span>
+                                                <span style={{ marginLeft: 4, color: '#888', fontSize: '0.95em' }}>{avgRating.toFixed(1)}</span>
                                                 {service.reviews && service.reviews.length > 0 && (
-                                                    <span style={{ marginLeft: 4, color: '#888', fontSize: '0.9em' }}>
-                                                        ({service.reviews.length} reviews)
-                                                    </span>
+                                                    <span style={{ marginLeft: 4, color: '#888', fontSize: '0.9em' }}>({service.reviews.length} reviews)</span>
                                                 )}
                                             </div>
-                                            <p className="service-price">₹{service.price}</p>
-                                            <button
-                                                className="btn btn-secondary mt-2"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleService(service);
-                                                }}
-                                            >
-                                                Remove
-                                            </button>
+                                            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                <p className="service-price">₹{service.price}</p>
+                                                <button
+                                                    className="btn btn-secondary mt-2"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleService(service);
+                                                    }}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 );

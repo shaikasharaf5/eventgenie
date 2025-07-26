@@ -601,7 +601,7 @@ function Profile({ customer, logout, toggleService }) {
                     <div className="section-header">
                         <h3 style={{ margin: '0', color: '#333', fontSize: '1.5rem' }}>
                             <i className="fas fa-calendar-check" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
-                            Past Bookings
+                            My Bookings
                         </h3>
                     </div>
 
@@ -625,281 +625,574 @@ function Profile({ customer, logout, toggleService }) {
                             <div className="bookings-list">
                                 {(() => {
                                     const groupedBookings = groupBookingsByDate(detailedBookings);
-                                    return Object.entries(groupedBookings).map(([date, bookings]) => (
-                                        <div key={date} className="booking-date-group" style={{
-                                            border: '1px solid #e9ecef',
-                                            borderRadius: '12px',
-                                            padding: '24px',
-                                            marginBottom: '20px',
-                                            background: '#fafafa'
-                                        }}>
-                                            <div style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                marginBottom: '16px',
-                                                paddingBottom: '12px',
-                                                borderBottom: '2px solid #e9ecef'
-                                            }}>
-                                                <div>
-                                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: '#333' }}>
-                                                        <i className="fas fa-calendar" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
-                                                        {formatDate(date)}
-                                                    </h4>
-                                                    <p style={{ margin: '0', fontSize: '0.9rem', color: '#666' }}>
-                                                        {bookings.length} Service{bookings.length !== 1 ? 's' : ''} booked for this date
-                                                    </p>
-                                                </div>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <span style={{
-                                                        padding: '6px 12px',
-                                                        backgroundColor: '#e8f5e8',
-                                                        borderRadius: '20px',
-                                                        fontSize: '0.9rem',
-                                                        color: '#2d5a2d',
-                                                        fontWeight: '500'
+                                    
+                                    // Separate pending and (confirmed+cancelled) bookings
+                                    const pendingBookings = [];
+                                    const confirmedOrCancelledBookings = [];
+                                    
+                                    Object.entries(groupedBookings).forEach(([date, bookings]) => {
+                                        const pendingForDate = bookings.filter(booking => booking.status === 'pending');
+                                        const confirmedOrCancelledForDate = bookings.filter(booking => booking.status === 'confirmed' || booking.status === 'cancelled');
+                                        
+                                        if (pendingForDate.length > 0) {
+                                            pendingBookings.push({ date, bookings: pendingForDate });
+                                        }
+                                        if (confirmedOrCancelledForDate.length > 0) {
+                                            confirmedOrCancelledBookings.push({ date, bookings: confirmedOrCancelledForDate });
+                                        }
+                                    });
+
+                                    return (
+                                        <>
+                                            {/* Pending Bookings Section */}
+                                            {pendingBookings.length > 0 && (
+                                                <div style={{ marginBottom: '40px' }}>
+                                                    <h4 style={{
+                                                        margin: '0 0 20px 0',
+                                                        color: '#856404',
+                                                        fontSize: '1.3rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px'
                                                     }}>
-                                                        {bookings.length} Service{bookings.length !== 1 ? 's' : ''}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div style={{
-                                                display: 'flex',
-                                                flexWrap: 'wrap',
-                                                gap: '20px',
-                                                justifyContent: 'flex-start',
-                                                alignItems: 'stretch'
-                                            }}>
-                                                {bookings.map((booking) => {
-                                                    const imageUrl = booking.images && booking.images.length > 0 ? booking.images[0] : 'https://via.placeholder.com/300x200?text=No+Image';
-                                                    const bookedForDate = booking.bookedForDate ? new Date(booking.bookedForDate).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    }) : 'Date not specified';
-                                                    const isCanceled = booking.status === 'canceled';
-                                                    const eventDate = new Date(booking.bookedForDate);
-                                                    const now = new Date();
-                                                    const diffMs = eventDate - now;
-                                                    const diffHours = diffMs / (1000 * 60 * 60);
-                                                    const canCancel = !isCanceled && diffHours > 48;
-
-                                                    return (
-                                                        <div key={booking.bookingId || `${booking.serviceId}-${booking.bookedForDate}`} className="service-card" style={{
-                                                            background: isCanceled ? '#ffeaea' : '#fff',
+                                                        <i className="fas fa-clock" style={{ color: '#ffc107' }}></i>
+                                                        Pending Bookings
+                                                        <span style={{
+                                                            background: '#ffc107',
+                                                            color: '#856404',
+                                                            padding: '4px 8px',
                                                             borderRadius: '12px',
-                                                            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                                                            overflow: 'hidden',
-                                                            border: isCanceled ? '2px solid #d9534f' : '1px solid #e9ecef',
-                                                            width: '100%',
-                                                            minWidth: '220px',
-                                                            maxWidth: '320px',
-                                                            flexShrink: 0,
-                                                            display: 'flex',
-                                                            flexDirection: 'column',
-                                                            marginBottom: '0',
-                                                            transition: 'box-shadow 0.2s, transform 0.2s'
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: '500'
                                                         }}>
-                                                            <div className="service-image-container" style={{
-                                                                width: '100%',
-                                                                height: '160px',
-                                                                overflow: 'hidden',
-                                                                position: 'relative',
+                                                            {pendingBookings.reduce((total, group) => total + group.bookings.length, 0)}
+                                                        </span>
+                                                    </h4>
+                                                    {pendingBookings.map(({ date, bookings }) => (
+                                                        <div key={`pending-${date}`} className="booking-date-group" style={{
+                                                            border: '2px solid #ffeaa7',
+                                                            borderRadius: '12px',
+                                                            padding: '24px',
+                                                            marginBottom: '20px',
+                                                            background: '#fffbf0'
+                                                        }}>
+                                                            <div style={{
                                                                 display: 'flex',
+                                                                justifyContent: 'space-between',
                                                                 alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                background: '#f5f5f5'
+                                                                marginBottom: '16px',
+                                                                paddingBottom: '12px',
+                                                                borderBottom: '2px solid #ffeaa7'
                                                             }}>
-                                                                <img
-                                                                    src={imageUrl}
-                                                                    alt={booking.serviceName || 'Service'}
-                                                                    className="service-image"
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        objectFit: 'cover',
-                                                                        borderTopLeftRadius: '12px',
-                                                                        borderTopRightRadius: '12px'
-                                                                    }}
-                                                                    onError={(e) => {
-                                                                        e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                                                                    }}
-                                                                />
-                                                                <div style={{
-                                                                    position: 'absolute',
-                                                                    top: '8px',
-                                                                    right: '8px',
-                                                                    background: 'rgba(0,0,0,0.7)',
-                                                                    color: 'white',
-                                                                    padding: '4px 8px',
-                                                                    borderRadius: '4px',
-                                                                    fontSize: '0.8rem'
-                                                                }}>
-                                                                    {bookedForDate}
+                                                                <div>
+                                                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: '#856404' }}>
+                                                                        <i className="fas fa-calendar" style={{ marginRight: '8px', color: '#ffc107' }}></i>
+                                                                        {formatDate(date)}
+                                                                    </h4>
+                                                                    <p style={{ margin: '0', fontSize: '0.9rem', color: '#856404' }}>
+                                                                        {bookings.length} Service{bookings.length !== 1 ? 's' : ''} pending confirmation
+                                                                    </p>
+                                                                </div>
+                                                                <div style={{ textAlign: 'right' }}>
+                                                                    <span style={{
+                                                                        padding: '6px 12px',
+                                                                        backgroundColor: '#fff3cd',
+                                                                        borderRadius: '20px',
+                                                                        fontSize: '0.9rem',
+                                                                        color: '#856404',
+                                                                        fontWeight: '500',
+                                                                        border: '1px solid #ffeaa7'
+                                                                    }}>
+                                                                        Pending
+                                                                    </span>
                                                                 </div>
                                                             </div>
-                                                            <div className="service-info" style={{
-                                                                padding: '16px',
-                                                                width: '100%',
+
+                                                            <div style={{
                                                                 display: 'flex',
-                                                                flexDirection: 'column',
-                                                                alignItems: 'flex-start',
-                                                                flex: 1
+                                                                flexWrap: 'wrap',
+                                                                gap: '20px',
+                                                                justifyContent: 'flex-start',
+                                                                alignItems: 'stretch'
                                                             }}>
-                                                                <div style={{ width: '100%' }}>
-                                                                    <h5 className="service-name" style={{
-                                                                        fontSize: '1.2rem',
-                                                                        fontFamily: 'Montserrat, sans-serif',
-                                                                        marginBottom: '4px',
-                                                                        color: '#6a11cb',
-                                                                        fontWeight: '600',
-                                                                        lineHeight: '1.3'
-                                                                    }}>
-                                                                        {booking.serviceName || 'Service Name Not Available'}
-                                                                    </h5>
+                                                                {bookings.map((booking) => {
+                                                                    const imageUrl = booking.images && booking.images.length > 0 ? booking.images[0] : 'https://via.placeholder.com/300x200?text=No+Image';
+                                                                    const bookedForDate = booking.bookedForDate ? new Date(booking.bookedForDate).toLocaleDateString('en-US', {
+                                                                        year: 'numeric',
+                                                                        month: 'long',
+                                                                        day: 'numeric'
+                                                                    }) : 'Date not specified';
 
-                                                                    <p className="service-provider" style={{
-                                                                        margin: '0 0 8px 0',
-                                                                        fontSize: '0.95rem',
-                                                                        color: '#666'
-                                                                    }}>
-                                                                        by {booking.provider || 'Provider Not Available'}
-                                                                    </p>
-
-                                                                    <p className="service-category" style={{
-                                                                        margin: '0 0 8px 0',
-                                                                        fontSize: '0.9rem',
-                                                                        color: '#666',
-                                                                        textTransform: 'capitalize',
-                                                                        display: 'inline-block',
-                                                                        backgroundColor: '#f5f5f5',
-                                                                        padding: '3px 10px',
-                                                                        borderRadius: '15px'
-                                                                    }}>
-                                                                        {booking.category || 'Category Not Available'}
-                                                                    </p>
-
-                                                                    <p className="service-price" style={{
-                                                                        fontSize: '1.1rem',
-                                                                        fontWeight: '600',
-                                                                        color: '#2575fc',
-                                                                        margin: '0 0 12px 0'
-                                                                    }}>
-                                                                        ₹{booking.price ? booking.price.toLocaleString() : 'Price Not Available'}
-                                                                    </p>
-                                                                </div>
-
-                                                                <div style={{
-                                                                    display: 'flex',
-                                                                    gap: '8px',
-                                                                    marginTop: 'auto',
-                                                                    width: '100%'
-                                                                }}>
-                                                                    <button
-                                                                        className="btn primary-btn"
-                                                                        style={{
-                                                                            padding: '8px 12px',
-                                                                            fontSize: '0.8rem',
-                                                                            flex: 1
-                                                                        }}
-                                                                        onClick={() => {
-                                                                            const serviceData = {
-                                                                                _id: booking.serviceId,
-                                                                                name: booking.serviceName,
-                                                                                provider: booking.provider,
-                                                                                price: booking.price,
-                                                                                category: booking.category,
-                                                                                images: booking.images,
-                                                                                description: booking.description
-                                                                            };
-                                                                            toggleService(serviceData);
-                                                                        }}
-                                                                        disabled={!booking.serviceId}
-                                                                    >
-                                                                        <i className="fas fa-plus"></i> Book Again
-                                                                    </button>
-
-                                                                    {!booking.hasReviewed ? (
-                                                                        <button
-                                                                            className="btn secondary-btn"
-                                                                            style={{
-                                                                                padding: '8px 12px',
-                                                                                fontSize: '0.8rem',
-                                                                                flex: 1
-                                                                            }}
-                                                                            onClick={() => openReviewModal(booking)}
-                                                                            disabled={!booking.serviceId}
-                                                                        >
-                                                                            <i className="fas fa-star"></i> Review
-                                                                        </button>
-                                                                    ) : (
-                                                                        <span style={{
-                                                                            padding: '8px 12px',
-                                                                            fontSize: '0.8rem',
-                                                                            color: '#28a745',
-                                                                            backgroundColor: '#d4edda',
-                                                                            borderRadius: '6px',
-                                                                            textAlign: 'center',
-                                                                            flex: 1
+                                                                    return (
+                                                                        <div key={booking.bookingId || `${booking.serviceId}-${booking.bookedForDate}`} className="service-card" style={{
+                                                                            background: '#fff',
+                                                                            borderRadius: '12px',
+                                                                            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                                                                            overflow: 'hidden',
+                                                                            border: '2px solid #ffeaa7',
+                                                                            width: '100%',
+                                                                            minWidth: '220px',
+                                                                            maxWidth: '320px',
+                                                                            flexShrink: 0,
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            marginBottom: '0',
+                                                                            transition: 'box-shadow 0.2s, transform 0.2s'
                                                                         }}>
-                                                                            <i className="fas fa-check"></i> Reviewed
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                    {isCanceled ? (
-                                                                        <span style={{ color: '#d9534f', fontWeight: 'bold' }}>Canceled</span>
-                                                                    ) : (
-                                                                        <span style={{ color: '#28a745', fontWeight: 'bold' }}>Booked</span>
-                                                                    )}
-                                                                    {canCancel && (
-                                                                        <button
-                                                                            style={{
-                                                                                background: '#d9534f',
-                                                                                color: '#fff',
-                                                                                border: 'none',
-                                                                                borderRadius: '6px',
-                                                                                padding: '6px 16px',
-                                                                                fontWeight: 'bold',
-                                                                                cursor: 'pointer',
-                                                                                marginLeft: '10px'
-                                                                            }}
-                                                                            onClick={async () => {
-                                                                                try {
-                                                                                    setLoading(true);
-                                                                                    const response = await fetch(`http://localhost:5001/api/customers/cancel-booking/${booking.serviceId}/${booking.bookingId}`, {
-                                                                                        method: 'POST',
-                                                                                    });
-                                                                                    if (response.ok) {
-                                                                                        showPopup('Booking canceled successfully', 'success');
-                                                                                        // Refresh bookings
-                                                                                        await fetchDetailedBookings();
-                                                                                    } else {
-                                                                                        const errorData = await response.json();
-                                                                                        console.error('Cancel booking error:', response.status, errorData);
-                                                                                        showPopup(errorData.message || 'Failed to cancel booking', 'error');
-                                                                                    }
-                                                                                } catch (error) {
-                                                                                    console.error('Network or fetch error while canceling booking:', error);
-                                                                                    showPopup('Network error while canceling booking', 'error');
-                                                                                } finally {
-                                                                                    setLoading(false);
-                                                                                }
-                                                                            }}
-                                                                            disabled={loading}
-                                                                        >
-                                                                            Cancel
-                                                                        </button>
-                                                                    )}
-                                                                </div>
+                                                                            <div className="service-image-container" style={{
+                                                                                width: '100%',
+                                                                                height: '160px',
+                                                                                overflow: 'hidden',
+                                                                                position: 'relative',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                background: '#f5f5f5'
+                                                                            }}>
+                                                                                <img
+                                                                                    src={imageUrl}
+                                                                                    alt={booking.serviceName || 'Service'}
+                                                                                    className="service-image"
+                                                                                    style={{
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                        objectFit: 'cover',
+                                                                                        borderTopLeftRadius: '12px',
+                                                                                        borderTopRightRadius: '12px'
+                                                                                    }}
+                                                                                    onError={(e) => {
+                                                                                        e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                                                                                    }}
+                                                                                />
+                                                                                <div style={{
+                                                                                    position: 'absolute',
+                                                                                    top: '8px',
+                                                                                    right: '8px',
+                                                                                    background: 'rgba(255, 193, 7, 0.9)',
+                                                                                    color: '#856404',
+                                                                                    padding: '4px 8px',
+                                                                                    borderRadius: '4px',
+                                                                                    fontSize: '0.8rem',
+                                                                                    fontWeight: '600'
+                                                                                }}>
+                                                                                    Pending
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="service-info" style={{
+                                                                                padding: '16px',
+                                                                                width: '100%',
+                                                                                display: 'flex',
+                                                                                flexDirection: 'column',
+                                                                                alignItems: 'flex-start',
+                                                                                flex: 1
+                                                                            }}>
+                                                                                <div style={{ width: '100%' }}>
+                                                                                    <h5 className="service-name" style={{
+                                                                                        fontSize: '1.2rem',
+                                                                                        fontFamily: 'Montserrat, sans-serif',
+                                                                                        marginBottom: '4px',
+                                                                                        color: '#856404',
+                                                                                        fontWeight: '600',
+                                                                                        lineHeight: '1.3'
+                                                                                    }}>
+                                                                                        {booking.serviceName || 'Service Name Not Available'}
+                                                                                    </h5>
+
+                                                                                    <p className="service-provider" style={{
+                                                                                        margin: '0 0 8px 0',
+                                                                                        fontSize: '0.95rem',
+                                                                                        color: '#856404'
+                                                                                    }}>
+                                                                                        by {booking.provider || 'Provider Not Available'}
+                                                                                    </p>
+
+                                                                                    <p className="service-category" style={{
+                                                                                        margin: '0 0 8px 0',
+                                                                                        fontSize: '0.9rem',
+                                                                                        color: '#856404',
+                                                                                        textTransform: 'capitalize',
+                                                                                        display: 'inline-block',
+                                                                                        backgroundColor: '#fff3cd',
+                                                                                        padding: '3px 10px',
+                                                                                        borderRadius: '15px'
+                                                                                    }}>
+                                                                                        {booking.category || 'Category Not Available'}
+                                                                                    </p>
+
+                                                                                    <p className="service-price" style={{
+                                                                                        fontSize: '1.1rem',
+                                                                                        fontWeight: '600',
+                                                                                        color: '#856404',
+                                                                                        margin: '0 0 12px 0'
+                                                                                    }}>
+                                                                                        ₹{booking.price ? booking.price.toLocaleString() : 'Price Not Available'}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div style={{
+                                                                                    display: 'flex',
+                                                                                    gap: '8px',
+                                                                                    marginTop: 'auto',
+                                                                                    width: '100%'
+                                                                                }}>
+                                                                                    <button
+                                                                                        className="btn primary-btn"
+                                                                                        style={{
+                                                                                            padding: '8px 12px',
+                                                                                            fontSize: '0.8rem',
+                                                                                            flex: 1,
+                                                                                            backgroundColor: '#ffc107',
+                                                                                            borderColor: '#ffc107',
+                                                                                            color: '#856404'
+                                                                                        }}
+                                                                                        onClick={() => {
+                                                                                            const serviceData = {
+                                                                                                _id: booking.serviceId,
+                                                                                                name: booking.serviceName,
+                                                                                                provider: booking.provider,
+                                                                                                price: booking.price,
+                                                                                                category: booking.category,
+                                                                                                images: booking.images,
+                                                                                                description: booking.description
+                                                                                            };
+                                                                                            toggleService(serviceData);
+                                                                                        }}
+                                                                                        disabled={!booking.serviceId}
+                                                                                    >
+                                                                                        <i className="fas fa-plus"></i> Book Again
+                                                                                    </button>
+                                                                                </div>
+                                                                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                                    <span style={{ color: '#856404', fontWeight: 'bold' }}>Pending Confirmation</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    ));
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Confirmed & Cancelled Bookings Section */}
+                                            {confirmedOrCancelledBookings.length > 0 && (
+                                                <div>
+                                                    <h4 style={{
+                                                        margin: '0 0 20px 0',
+                                                        color: '#155724',
+                                                        fontSize: '1.3rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px'
+                                                    }}>
+                                                        <i className="fas fa-check-circle" style={{ color: '#28a745' }}></i>
+                                                        Confirmed & Cancelled Bookings
+                                                        <span style={{
+                                                            background: '#28a745',
+                                                            color: '#fff',
+                                                            padding: '4px 8px',
+                                                            borderRadius: '12px',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: '500'
+                                                        }}>
+                                                            {confirmedOrCancelledBookings.reduce((total, group) => total + group.bookings.length, 0)}
+                                                        </span>
+                                                    </h4>
+                                                    {confirmedOrCancelledBookings.map(({ date, bookings }) => (
+                                                        <div key={`confirmed-cancelled-${date}`} className="booking-date-group" style={{
+                                                            border: '1px solid #e9ecef',
+                                                            borderRadius: '12px',
+                                                            padding: '24px',
+                                                            marginBottom: '20px',
+                                                            background: '#fafafa'
+                                                        }}>
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                marginBottom: '16px',
+                                                                paddingBottom: '12px',
+                                                                borderBottom: '2px solid #e9ecef'
+                                                            }}>
+                                                                <div>
+                                                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: '#333' }}>
+                                                                        <i className="fas fa-calendar" style={{ marginRight: '8px', color: '#6c63ff' }}></i>
+                                                                        {formatDate(date)}
+                                                                    </h4>
+                                                                    <p style={{ margin: '0', fontSize: '0.9rem', color: '#666' }}>
+                                                                        {bookings.length} Service{bookings.length !== 1 ? 's' : ''} on this date
+                                                                    </p>
+                                                                </div>
+                                                                <div style={{ textAlign: 'right' }}>
+                                                                    <span style={{
+                                                                        padding: '6px 12px',
+                                                                        backgroundColor: '#d4edda',
+                                                                        borderRadius: '20px',
+                                                                        fontSize: '0.9rem',
+                                                                        color: '#155724',
+                                                                        fontWeight: '500',
+                                                                        border: '1px solid #c3e6cb'
+                                                                    }}>
+                                                                        Confirmed
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                flexWrap: 'wrap',
+                                                                gap: '20px',
+                                                                justifyContent: 'flex-start',
+                                                                alignItems: 'stretch'
+                                                            }}>
+                                                                {bookings.map((booking) => {
+                                                                    const imageUrl = booking.images && booking.images.length > 0 ? booking.images[0] : 'https://via.placeholder.com/300x200?text=No+Image';
+                                                                    const bookedForDate = booking.bookedForDate ? new Date(booking.bookedForDate).toLocaleDateString('en-US', {
+                                                                        year: 'numeric',
+                                                                        month: 'long',
+                                                                        day: 'numeric'
+                                                                    }) : 'Date not specified';
+                                                                    const isCanceled = booking.status === 'cancelled';
+                                                                    const eventDate = new Date(booking.bookedForDate);
+                                                                    const now = new Date();
+                                                                    const diffMs = eventDate - now;
+                                                                    const diffHours = diffMs / (1000 * 60 * 60);
+                                                                    const canCancel = !isCanceled && diffHours > 48;
+
+                                                                    return (
+                                                                        <div key={booking.bookingId || `${booking.serviceId}-${booking.bookedForDate}`} className="service-card" style={{
+                                                                            background: isCanceled ? '#ffeaea' : '#fff',
+                                                                            borderRadius: '12px',
+                                                                            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                                                                            overflow: 'hidden',
+                                                                            border: isCanceled ? '2px solid #d9534f' : '1px solid #e9ecef',
+                                                                            width: '100%',
+                                                                            minWidth: '220px',
+                                                                            maxWidth: '320px',
+                                                                            flexShrink: 0,
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            marginBottom: '0',
+                                                                            transition: 'box-shadow 0.2s, transform 0.2s'
+                                                                        }}>
+                                                                            <div className="service-image-container" style={{
+                                                                                width: '100%',
+                                                                                height: '160px',
+                                                                                overflow: 'hidden',
+                                                                                position: 'relative',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                background: '#f5f5f5'
+                                                                            }}>
+                                                                                <img
+                                                                                    src={imageUrl}
+                                                                                    alt={booking.serviceName || 'Service'}
+                                                                                    className="service-image"
+                                                                                    style={{
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                        objectFit: 'cover',
+                                                                                        borderTopLeftRadius: '12px',
+                                                                                        borderTopRightRadius: '12px'
+                                                                                    }}
+                                                                                    onError={(e) => {
+                                                                                        e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                                                                                    }}
+                                                                                />
+                                                                                <div style={{
+                                                                                    position: 'absolute',
+                                                                                    top: '8px',
+                                                                                    right: '8px',
+                                                                                    background: isCanceled ? '#f8d7da' : '#d4edda',
+                                                                                    color: isCanceled ? '#721c24' : '#155724',
+                                                                                    padding: '4px 8px',
+                                                                                    borderRadius: '4px',
+                                                                                    fontSize: '0.8rem',
+                                                                                    fontWeight: '600',
+                                                                                    border: isCanceled ? '1px solid #f5c6cb' : '1px solid #c3e6cb'
+                                                                                }}>
+                                                                                    {isCanceled ? 'Cancelled' : 'Confirmed'}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="service-info" style={{
+                                                                                padding: '16px',
+                                                                                width: '100%',
+                                                                                display: 'flex',
+                                                                                flexDirection: 'column',
+                                                                                alignItems: 'flex-start',
+                                                                                flex: 1
+                                                                            }}>
+                                                                                <div style={{ width: '100%' }}>
+                                                                                    <h5 className="service-name" style={{
+                                                                                        fontSize: '1.2rem',
+                                                                                        fontFamily: 'Montserrat, sans-serif',
+                                                                                        marginBottom: '4px',
+                                                                                        color: isCanceled ? '#d32f2f' : '#6a11cb',
+                                                                                        fontWeight: '600',
+                                                                                        lineHeight: '1.3'
+                                                                                    }}>
+                                                                                        {booking.serviceName || 'Service Name Not Available'}
+                                                                                    </h5>
+
+                                                                                    <p className="service-provider" style={{
+                                                                                        margin: '0 0 8px 0',
+                                                                                        fontSize: '0.95rem',
+                                                                                        color: isCanceled ? '#e57373' : '#666'
+                                                                                    }}>
+                                                                                        by {booking.provider || 'Provider Not Available'}
+                                                                                    </p>
+
+                                                                                    <p className="service-category" style={{
+                                                                                        margin: '0 0 8px 0',
+                                                                                        fontSize: '0.9rem',
+                                                                                        color: isCanceled ? '#e57373' : '#666',
+                                                                                        textTransform: 'capitalize',
+                                                                                        display: 'inline-block',
+                                                                                        backgroundColor: isCanceled ? '#ffebee' : '#f5f5f5',
+                                                                                        padding: '3px 10px',
+                                                                                        borderRadius: '15px'
+                                                                                    }}>
+                                                                                        {booking.category || 'Category Not Available'}
+                                                                                    </p>
+
+                                                                                    <p className="service-price" style={{
+                                                                                        fontSize: '1.1rem',
+                                                                                        fontWeight: '600',
+                                                                                        color: isCanceled ? '#d32f2f' : '#2575fc',
+                                                                                        margin: '0 0 12px 0'
+                                                                                    }}>
+                                                                                        ₹{booking.price ? booking.price.toLocaleString() : 'Price Not Available'}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div style={{
+                                                                                    display: 'flex',
+                                                                                    gap: '8px',
+                                                                                    marginTop: 'auto',
+                                                                                    width: '100%'
+                                                                                }}>
+                                                                                    <button
+                                                                                        className="btn primary-btn"
+                                                                                        style={{
+                                                                                            padding: '8px 12px',
+                                                                                            fontSize: '0.8rem',
+                                                                                            flex: 1
+                                                                                        }}
+                                                                                        onClick={() => {
+                                                                                            const serviceData = {
+                                                                                                _id: booking.serviceId,
+                                                                                                name: booking.serviceName,
+                                                                                                provider: booking.provider,
+                                                                                                price: booking.price,
+                                                                                                category: booking.category,
+                                                                                                images: booking.images,
+                                                                                                description: booking.description
+                                                                                            };
+                                                                                            toggleService(serviceData);
+                                                                                        }}
+                                                                                        disabled={!booking.serviceId}
+                                                                                    >
+                                                                                        <i className="fas fa-plus"></i> Book Again
+                                                                                    </button>
+
+                                                                                    {!booking.hasReviewed && !isCanceled ? (
+                                                                                        <button
+                                                                                            className="btn secondary-btn"
+                                                                                            style={{
+                                                                                                padding: '8px 12px',
+                                                                                                fontSize: '0.8rem',
+                                                                                                flex: 1
+                                                                                            }}
+                                                                                            onClick={() => openReviewModal(booking)}
+                                                                                            disabled={!booking.serviceId}
+                                                                                        >
+                                                                                            <i className="fas fa-star"></i> Review
+                                                                                        </button>
+                                                                                    ) : !isCanceled ? (
+                                                                                        <span style={{
+                                                                                            padding: '8px 12px',
+                                                                                            fontSize: '0.8rem',
+                                                                                            color: '#28a745',
+                                                                                            backgroundColor: '#d4edda',
+                                                                                            borderRadius: '6px',
+                                                                                            textAlign: 'center',
+                                                                                            flex: 1
+                                                                                        }}>
+                                                                                            <i className="fas fa-check"></i> Reviewed
+                                                                                        </span>
+                                                                                    ) : null}
+                                                                                </div>
+                                                                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                                    {isCanceled ? (
+                                                                                        <span style={{ color: '#d9534f', fontWeight: 'bold' }}>Cancelled</span>
+                                                                                    ) : (
+                                                                                        <span style={{ color: '#28a745', fontWeight: 'bold' }}>Confirmed</span>
+                                                                                    )}
+                                                                                    {canCancel && !isCanceled && (
+                                                                                        <button
+                                                                                            style={{
+                                                                                                background: '#d9534f',
+                                                                                                color: '#fff',
+                                                                                                border: 'none',
+                                                                                                borderRadius: '6px',
+                                                                                                padding: '6px 16px',
+                                                                                                fontWeight: 'bold',
+                                                                                                cursor: 'pointer',
+                                                                                                marginLeft: '10px'
+                                                                                            }}
+                                                                                            onClick={async () => {
+                                                                                                try {
+                                                                                                    setLoading(true);
+                                                                                                    const response = await fetch(`http://localhost:5001/api/customers/cancel-booking/${booking.serviceId}/${booking.bookingId}`, {
+                                                                                                        method: 'POST',
+                                                                                                    });
+                                                                                                    if (response.ok) {
+                                                                                                        showPopup('Booking canceled successfully', 'success');
+                                                                                                        // Refresh bookings
+                                                                                                        await fetchDetailedBookings();
+                                                                                                    } else {
+                                                                                                        const errorData = await response.json();
+                                                                                                        console.error('Cancel booking error:', response.status, errorData);
+                                                                                                        showPopup(errorData.message || 'Failed to cancel booking', 'error');
+                                                                                                    }
+                                                                                                } catch (error) {
+                                                                                                console.log("");
+                                                                                                } finally {
+                                                                                                    setLoading(false);
+                                                                                                }
+                                                                                            }}
+                                                                                            disabled={loading}
+                                                                                        >
+                                                                                            Cancel
+                                                                                        </button>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* No Bookings Message */}
+                                            {pendingBookings.length === 0 && confirmedOrCancelledBookings.length === 0 && (
+                                                <div style={{
+                                                    textAlign: 'center',
+                                                    padding: '40px 20px',
+                                                    color: '#666'
+                                                }}>
+                                                    <i className="fas fa-calendar-check" style={{ fontSize: '3rem', marginBottom: '20px', opacity: 0.3 }}></i>
+                                                    <h4 style={{ margin: '0 0 8px 0', color: '#333' }}>No bookings yet</h4>
+                                                    <p style={{ margin: '0' }}>Your booking history will appear here once you book services.</p>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
                                 })()}
                             </div>
                         ) : (
@@ -909,7 +1202,7 @@ function Profile({ customer, logout, toggleService }) {
                                 color: '#666'
                             }}>
                                 <i className="fas fa-calendar-check" style={{ fontSize: '3rem', marginBottom: '20px', opacity: 0.3 }}></i>
-                                <h4 style={{ margin: '0 0 8px 0', color: '#333' }}>No past bookings yet</h4>
+                                <h4 style={{ margin: '0 0 8px 0', color: '#333' }}>No bookings yet</h4>
                                 <p style={{ margin: '0' }}>Your booking history will appear here once you book services.</p>
                             </div>
                         )}

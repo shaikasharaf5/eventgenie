@@ -16,7 +16,7 @@ const bookingSchema = new mongoose.Schema({
     customerPhone: { type: String, required: true },
     bookedForDate: { type: String, required: true }, // Date when the service is booked for (YYYY-MM-DD)
     dateBooked: { type: Date, default: Date.now },    // Date when the booking was made
-    status: { type: String, enum: ['booked', 'canceled'], default: 'booked' } // Status of the booking
+    status: { type: String, enum: ['pending', 'confirmed', 'cancelled'], default: 'pending' } // Status of the booking
 });
 
 // Main Service Schema
