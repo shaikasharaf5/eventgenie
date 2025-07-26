@@ -304,8 +304,11 @@ function ServiceDetailsModal({ service, onClose, onAddToCart, selectedDate, show
                                     cursor: service.isAvailable !== false ? 'pointer' : 'not-allowed'
                                 }}
                                 disabled={service.isAvailable === false}
+                                title={service.availabilityStatus === 'Blocked' ? 'Service is blocked by vendor for this date' : (service.isAvailable === false ? 'Service is not available for this date' : '')}
                             >
-                                {service.isAvailable !== false ? 'Add to Cart' : 'Not Available'}
+                                {service.isAvailable !== false
+                                    ? 'Add to Cart'
+                                    : (service.availabilityStatus === 'Blocked' ? 'Blocked by Vendor' : 'Not Available')}
                             </button>
                         </div>
                     </div>

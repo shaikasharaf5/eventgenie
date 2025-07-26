@@ -821,9 +821,10 @@ function Services({ selectedServices, toggleService }) {
                                                                     className="btn secondary-btn"
                                                                     style={{ width: '100%', marginTop: 4, padding: '12px', fontSize: '1rem', fontWeight: '500', opacity: 0.6, cursor: 'not-allowed' }}
                                                                     disabled
+                                                                    title={service.availabilityStatus === 'Blocked' ? 'Service is blocked by vendor for this date' : 'Service is already booked for this date'}
                                                                 >
                                                                     <i className="fas fa-ban" style={{ marginRight: '8px' }}></i>
-                                                                    Not Available
+                                                                    {service.availabilityStatus === 'Blocked' ? 'Blocked by Vendor' : 'Not Available'}
                                                                 </button>
                                                             )}
                                                         </div>

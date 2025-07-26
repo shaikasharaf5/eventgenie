@@ -68,14 +68,13 @@ router.get('/', async (req, res) => {
                 const isBooked = service.bookings && service.bookings.some(booking =>
                     booking.bookedForDate === date && booking.status !== 'cancelled'
                 );
-
-                console.log(`Service ${service.name}: isBooked = ${isBooked} for date ${date}`);
-
+                // Check if the service is blocked for this date
+                const isBlocked = service.blockedDates && service.blockedDates.includes(date);
                 // Add availability information to the service object
                 return {
                     ...service.toObject(),
-                    isAvailable: !isBooked,
-                    availabilityStatus: isBooked ? 'Booked' : 'Available',
+                    isAvailable: !isBooked && !isBlocked,
+                    availabilityStatus: isBlocked ? 'Blocked' : (isBooked ? 'Booked' : 'Available'),
                     selectedDate: date
                 };
             });
@@ -324,6 +323,34 @@ router.get('/search/:query', async (req, res) => {
             ]
         });
         res.json(services);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Block service for specific dates
+router.post('/:id/block', async (req, res) => {
+    const { dates } = req.body; // Array of YYYY-MM-DD strings
+    try {
+        const service = await Service.findById(req.params.id);
+        if (!service) return res.status(404).json({ message: 'Service not found' });
+        service.blockedDates = Array.from(new Set([...(service.blockedDates || []), ...dates]));
+        await service.save();
+        res.status(200).json({ message: 'Service blocked for selected dates', blockedDates: service.blockedDates });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Unblock service for specific dates
+router.post('/:id/unblock', async (req, res) => {
+    const { dates } = req.body; // Array of YYYY-MM-DD strings
+    try {
+        const service = await Service.findById(req.params.id);
+        if (!service) return res.status(404).json({ message: 'Service not found' });
+        service.blockedDates = (service.blockedDates || []).filter(date => !dates.includes(date));
+        await service.save();
+        res.status(200).json({ message: 'Service unblocked for selected dates', blockedDates: service.blockedDates });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

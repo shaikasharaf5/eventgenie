@@ -26,6 +26,11 @@ function Navbar({ isLoggedIn, isVendorLoggedIn, currentCustomer, currentVendor, 
                                     <i className="fas fa-user"></i> Profile
                                 </a>
                             </li>
+                            <li>
+                                <a href="#" className={vendorTab === 'block' ? 'active' : ''} onClick={e => { e.preventDefault(); setVendorTab('block'); }}>
+                                    <i className="fas fa-ban"></i> Block Services
+                                </a>
+                            </li>
                         </>
                     ) : isLoggedIn ? (
                         <>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar.jsx';
 import './vendor-dashboard.css';
 import ServiceDetailsModal from './ServiceDetailsModal.jsx';
+import Calendar from 'react-multi-date-picker-calendar';
 
 function renderStars(rating) {
     const fullStars = Math.floor(rating);
@@ -1448,6 +1449,22 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                         </div>
                     </section>
                 )}
+
+                {vendorTab === 'block' && (
+                    <section className="dashboard-section active">
+                        <div className="section-header">
+                            <h2>Block Services</h2>
+                            <p style={{ color: '#666', marginTop: '10px' }}>
+                                Select dates and services to block or unblock their availability. Blocked services will not be available for booking on those dates.
+                            </p>
+                        </div>
+                        <BlockServicesSection
+                            vendor={vendor}
+                            myServices={myServices}
+                            fetchVendorServices={fetchVendorServices}
+                        />
+                    </section>
+                )}
             </div>
 
             {isModalOpen && selectedService && (
@@ -1457,6 +1474,149 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                     onAddToCart={handleAddToCart}
                 />
             )}
+        </div>
+    );
+}
+
+function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
+    const [selectedDates, setSelectedDates] = useState([]);
+    const [selectedServiceIds, setSelectedServiceIds] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [blockedMap, setBlockedMap] = useState({}); // {serviceId: [dates]}
+
+    useEffect(() => {
+        // Build blockedMap from myServices
+        const map = {};
+        myServices.forEach(s => {
+            map[s._id] = s.blockedDates || [];
+        });
+        setBlockedMap(map);
+    }, [myServices]);
+
+    const handleDateChange = (dates) => {
+        setSelectedDates(dates.map(d => d.toISOString().slice(0, 10)));
+    };
+
+    const handleServiceToggle = (serviceId) => {
+        setSelectedServiceIds(prev =>
+            prev.includes(serviceId)
+                ? prev.filter(id => id !== serviceId)
+                : [...prev, serviceId]
+        );
+    };
+
+    const blockServices = async () => {
+        if (selectedServiceIds.length === 0 || selectedDates.length === 0) {
+            setError('Select at least one service and one date.');
+            return;
+        }
+        setLoading(true); setError(''); setSuccess('');
+        try {
+            await Promise.all(selectedServiceIds.map(async (serviceId) => {
+                await fetch(`http://localhost:5001/api/services/${serviceId}/block`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dates: selectedDates })
+                });
+            }));
+            setSuccess('Blocked selected services for chosen dates.');
+            setSelectedDates([]); setSelectedServiceIds([]);
+            fetchVendorServices();
+        } catch (e) {
+            setError('Failed to block services.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const unblockServiceDate = async (serviceId, date) => {
+        setLoading(true); setError(''); setSuccess('');
+        try {
+            await fetch(`http://localhost:5001/api/services/${serviceId}/unblock`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dates: [date] })
+            });
+            setSuccess('Unblocked service for date.');
+            fetchVendorServices();
+        } catch (e) {
+            setError('Failed to unblock.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', marginTop: '30px' }}>
+            <div style={{ flex: 1, minWidth: '340px', background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ marginBottom: '18px', color: '#333' }}>Select Dates</h3>
+                <Calendar
+                    multiSelect
+                    dates={selectedDates.map(d => new Date(d))}
+                    onChange={handleDateChange}
+                    minDate={new Date()}
+                />
+                <div style={{ marginTop: '18px', color: '#888', fontSize: '0.95rem' }}>
+                    {selectedDates.length > 0 ? `Selected: ${selectedDates.join(', ')}` : 'No dates selected.'}
+                </div>
+            </div>
+            <div style={{ flex: 1, minWidth: '340px', background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ marginBottom: '18px', color: '#333' }}>Select Services</h3>
+                <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                    {myServices.length === 0 ? <div>No services found.</div> : myServices.map(service => (
+                        <label key={service._id} style={{ display: 'block', marginBottom: '10px', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                checked={selectedServiceIds.includes(service._id)}
+                                onChange={() => handleServiceToggle(service._id)}
+                                style={{ marginRight: '10px' }}
+                            />
+                            {service.name} <span style={{ color: '#888', fontSize: '0.9rem' }}>({service.category})</span>
+                        </label>
+                    ))}
+                </div>
+                <button
+                    className="btn primary-btn"
+                    style={{ marginTop: '24px', width: '100%' }}
+                    onClick={blockServices}
+                    disabled={loading}
+                >
+                    {loading ? 'Blocking...' : 'Block Selected'}
+                </button>
+                {error && <div style={{ color: '#c33', marginTop: '10px' }}>{error}</div>}
+                {success && <div style={{ color: '#2e7d32', marginTop: '10px' }}>{success}</div>}
+            </div>
+            <div style={{ flex: 1, minWidth: '340px', background: '#fff', borderRadius: '16px', padding: '30px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ marginBottom: '18px', color: '#333' }}>Blocked Services/Dates</h3>
+                <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                    {myServices.length === 0 ? <div>No services found.</div> : myServices.map(service => (
+                        <div key={service._id} style={{ marginBottom: '18px' }}>
+                            <div style={{ fontWeight: 'bold', color: '#444' }}>{service.name}</div>
+                            <ul style={{ margin: '6px 0 0 0', padding: 0, listStyle: 'none' }}>
+                                {(blockedMap[service._id] || []).length === 0 ? (
+                                    <li style={{ color: '#888', fontSize: '0.95rem' }}>No blocked dates.</li>
+                                ) : (
+                                    blockedMap[service._id].map(date => (
+                                        <li key={date} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                            <span style={{ marginRight: '10px' }}>{date}</span>
+                                            <button
+                                                className="btn secondary-btn"
+                                                style={{ padding: '2px 10px', fontSize: '0.85rem' }}
+                                                onClick={() => unblockServiceDate(service._id, date)}
+                                                disabled={loading}
+                                            >
+                                                Unblock
+                                            </button>
+                                        </li>
+                                    ))
+                                )}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 } 

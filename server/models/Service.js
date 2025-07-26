@@ -31,7 +31,8 @@ const serviceSchema = new mongoose.Schema({
     description: { type: String, required: true },
     address: { type: String, required: true },
     reviews: [reviewSchema],
-    bookings: [bookingSchema]
+    bookings: [bookingSchema],
+    blockedDates: [{ type: String }] // Array of YYYY-MM-DD strings when service is blocked
 }, {
     timestamps: true
 });
