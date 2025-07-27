@@ -356,4 +356,108 @@ router.post('/:id/unblock', async (req, res) => {
     }
 });
 
+// Bulk block services for specific dates
+router.post('/bulk-block', async (req, res) => {
+    const { serviceIds, dates } = req.body; // serviceIds: array of service IDs, dates: array of YYYY-MM-DD
+    if (!Array.isArray(serviceIds) || !Array.isArray(dates) || serviceIds.length === 0 || dates.length === 0) {
+        return res.status(400).json({ message: 'serviceIds and dates must be non-empty arrays' });
+    }
+    try {
+        const results = [];
+        for (const id of serviceIds) {
+            const service = await Service.findById(id);
+            if (!service) {
+                results.push({ id, success: false, error: 'Service not found' });
+                continue;
+            }
+            service.blockedDates = Array.from(new Set([...(service.blockedDates || []), ...dates]));
+            await service.save();
+            results.push({ id, success: true, blockedDates: service.blockedDates });
+        }
+        res.status(200).json({ message: 'Bulk block completed', results });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Bulk unblock services for specific dates
+router.post('/bulk-unblock', async (req, res) => {
+    const { serviceIds, dates } = req.body;
+    if (!Array.isArray(serviceIds) || !Array.isArray(dates) || serviceIds.length === 0 || dates.length === 0) {
+        return res.status(400).json({ message: 'serviceIds and dates must be non-empty arrays' });
+    }
+    try {
+        const results = [];
+        for (const id of serviceIds) {
+            const service = await Service.findById(id);
+            if (!service) {
+                results.push({ id, success: false, error: 'Service not found' });
+                continue;
+            }
+            service.blockedDates = (service.blockedDates || []).filter(date => !dates.includes(date));
+            await service.save();
+            results.push({ id, success: true, blockedDates: service.blockedDates });
+        }
+        res.status(200).json({ message: 'Bulk unblock completed', results });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Admin middleware (simple header check for demo)
+function isAdmin(req, res, next) {
+    if (req.headers['x-admin'] === 'true') {
+        return next();
+    }
+    return res.status(403).json({ message: 'Admin access required' });
+}
+
+// Admin bulk block
+router.post('/admin/bulk-block', isAdmin, async (req, res) => {
+    const { serviceIds, dates } = req.body;
+    if (!Array.isArray(serviceIds) || !Array.isArray(dates) || serviceIds.length === 0 || dates.length === 0) {
+        return res.status(400).json({ message: 'serviceIds and dates must be non-empty arrays' });
+    }
+    try {
+        const results = [];
+        for (const id of serviceIds) {
+            const service = await Service.findById(id);
+            if (!service) {
+                results.push({ id, success: false, error: 'Service not found' });
+                continue;
+            }
+            service.blockedDates = Array.from(new Set([...(service.blockedDates || []), ...dates]));
+            await service.save();
+            results.push({ id, success: true, blockedDates: service.blockedDates });
+        }
+        res.status(200).json({ message: 'Admin bulk block completed', results });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Admin bulk unblock
+router.post('/admin/bulk-unblock', isAdmin, async (req, res) => {
+    const { serviceIds, dates } = req.body;
+    if (!Array.isArray(serviceIds) || !Array.isArray(dates) || serviceIds.length === 0 || dates.length === 0) {
+        return res.status(400).json({ message: 'serviceIds and dates must be non-empty arrays' });
+    }
+    try {
+        const results = [];
+        for (const id of serviceIds) {
+            const service = await Service.findById(id);
+            if (!service) {
+                results.push({ id, success: false, error: 'Service not found' });
+                continue;
+            }
+            service.blockedDates = (service.blockedDates || []).filter(date => !dates.includes(date));
+            await service.save();
+            results.push({ id, success: true, blockedDates: service.blockedDates });
+        }
+        res.status(200).json({ message: 'Admin bulk unblock completed', results });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

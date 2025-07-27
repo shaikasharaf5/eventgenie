@@ -4,6 +4,8 @@ import Navbar from './Navbar.jsx';
 import './vendor-dashboard.css';
 import ServiceDetailsModal from './ServiceDetailsModal.jsx';
 import Calendar from 'react-multi-date-picker-calendar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function renderStars(rating) {
     const fullStars = Math.floor(rating);
@@ -1373,14 +1375,14 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                                                                         }
                                                                     });
                                                                     if (response.ok) {
-                                                                        alert('Booking rejected successfully');
+                                                                        toast.success('Booking rejected successfully');
                                                                         fetchVendorBookings(); // Refresh bookings
                                                                     } else {
                                                                         const errorData = await response.json();
-                                                                        alert(errorData.message || 'Failed to reject booking');
+                                                                        toast.error(errorData.message || 'Failed to reject booking');
                                                                     }
                                                                 } catch (error) {
-                                                                    alert('Network error. Please try again.');
+                                                                    toast.error('Network error. Please try again.');
                                                                 } finally {
                                                                     setLoading(false);
                                                                 }
@@ -1407,14 +1409,14 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                                                                         }
                                                                     });
                                                                     if (response.ok) {
-                                                                        alert('Booking accepted successfully');
+                                                                        toast.success('Booking accepted successfully');
                                                                         fetchVendorBookings(); // Refresh bookings
                                                                     } else {
                                                                         const errorData = await response.json();
-                                                                        alert(errorData.message || 'Failed to accept booking');
+                                                                        toast.error(errorData.message || 'Failed to accept booking');
                                                                     }
                                                                 } catch (error) {
-                                                                    alert('Network error. Please try again.');
+                                                                    toast.error('Network error. Please try again.');
                                                                 } finally {
                                                                     setLoading(false);
                                                                 }
@@ -1482,8 +1484,6 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
     const [selectedDates, setSelectedDates] = useState([]);
     const [selectedServiceIds, setSelectedServiceIds] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [blockedMap, setBlockedMap] = useState({});
     const [calendarMonth, setCalendarMonth] = useState(() => {
         const today = new Date();
@@ -1505,7 +1505,12 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
     const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const today = new Date();
 
-    const getDateKey = (d) => d.toISOString().slice(0, 10);
+    const getDateKey = (d) => {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    };
     const isSelected = (d) => selectedDates.includes(getDateKey(d));
     const handleDateClick = (d) => {
         const key = getDateKey(d);
@@ -1539,40 +1544,48 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
 
     const blockServices = async () => {
         if (selectedServiceIds.length === 0 || selectedDates.length === 0) {
-            setError('Select at least one service and one date.');
+            toast.error('Select at least one service and one date.');
             return;
         }
-        setLoading(true); setError(''); setSuccess('');
+        setLoading(true);
         try {
-            await Promise.all(selectedServiceIds.map(async (serviceId) => {
-                await fetch(`http://localhost:5001/api/services/${serviceId}/block`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dates: selectedDates })
-                });
-            }));
-            setSuccess('Blocked selected services for chosen dates.');
-            setSelectedDates([]); setSelectedServiceIds([]);
-            fetchVendorServices();
+            const res = await fetch('http://localhost:5001/api/services/bulk-block', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ serviceIds: selectedServiceIds, dates: selectedDates })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success('Blocked selected services for chosen dates.');
+                setSelectedDates([]); setSelectedServiceIds([]);
+                fetchVendorServices();
+            } else {
+                toast.error(data.message || 'Failed to block services.');
+            }
         } catch (e) {
-            setError('Failed to block services.');
+            toast.error('Failed to block services.');
         } finally {
             setLoading(false);
         }
     };
 
     const unblockServiceDate = async (serviceId, date) => {
-        setLoading(true); setError(''); setSuccess('');
+        setLoading(true);
         try {
-            await fetch(`http://localhost:5001/api/services/${serviceId}/unblock`, {
+            const res = await fetch('http://localhost:5001/api/services/bulk-unblock', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dates: [date] })
+                body: JSON.stringify({ serviceIds: [serviceId], dates: [date] })
             });
-            setSuccess('Unblocked service for date.');
-            fetchVendorServices();
+            const data = await res.json();
+            if (res.ok) {
+                toast.success('Unblocked service for date.');
+                fetchVendorServices();
+            } else {
+                toast.error(data.message || 'Failed to unblock.');
+            }
         } catch (e) {
-            setError('Failed to unblock.');
+            toast.error('Failed to unblock.');
         } finally {
             setLoading(false);
         }
@@ -1581,6 +1594,7 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
     // --- Layout ---
     return (
         <div className="block-section-outer">
+            <ToastContainer position="top-center" autoClose={2500} />
             <div className="block-section-layout">
                 <div className="block-calendar-container">
                     <h3>Select Dates</h3>
@@ -1635,10 +1649,10 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
                         onClick={blockServices}
                         disabled={loading}
                     >
-                        {loading ? 'Blocking...' : 'Block Selected'}
+                        {loading ? <span className="spinner" /> : 'Block Selected'}
                     </button>
-                    {error && <div className="block-error">{error}</div>}
-                    {success && <div className="block-success">{success}</div>}
+                    {/* {error && <div className="block-error">{error}</div>} */}
+                    {/* {success && <div className="block-success">{success}</div>} */}
                 </div>
             </div>
             <div className="block-list-container">
