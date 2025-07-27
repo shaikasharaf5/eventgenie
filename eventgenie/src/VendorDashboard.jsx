@@ -1489,6 +1489,7 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
         const today = new Date();
         return { year: today.getFullYear(), month: today.getMonth() };
     });
+    const [hoveredDate, setHoveredDate] = useState(null);
 
     useEffect(() => {
         const map = {};
@@ -1533,6 +1534,25 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
         });
     };
     // --- End Custom Calendar Logic ---
+
+    // Helper: Get blocked services for a date
+    const getBlockedServicesForDate = (dateKey) => {
+        return myServices.filter(s => (s.blockedDates || []).includes(dateKey));
+    };
+    // Helper: Get bookings for a date
+    const getBookingsForDate = (dateKey) => {
+        let bookings = [];
+        myServices.forEach(s => {
+            if (s.bookings) {
+                s.bookings.forEach(b => {
+                    if (b.bookedForDate === dateKey && b.status !== 'cancelled') {
+                        bookings.push({ service: s, booking: b });
+                    }
+                });
+            }
+        });
+        return bookings;
+    };
 
     const handleServiceToggle = (serviceId) => {
         setSelectedServiceIds(prev =>
@@ -1614,13 +1634,50 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
                             {Array(daysInMonth).fill(null).map((_, i) => {
                                 const dateObj = new Date(year, month, i + 1);
                                 const key = getDateKey(dateObj);
+                                const blockedServices = getBlockedServicesForDate(key);
+                                const bookings = getBookingsForDate(key);
+                                let dayClass = 'calendar-day';
+                                if (blockedServices.length > 0 && bookings.length > 0) {
+                                    dayClass += ' calendar-day-blocked-booked'; // purple
+                                } else if (blockedServices.length > 0) {
+                                    dayClass += ' calendar-day-blocked'; // red
+                                } else if (bookings.length > 0) {
+                                    dayClass += ' calendar-day-booked'; // green
+                                }
+                                if (isSelected(dateObj)) dayClass += ' selected';
+                                if (dateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate())) dayClass += ' calendar-day-disabled';
                                 return (
                                     <div
                                         key={key}
-                                        className={`calendar-day${isSelected(dateObj) ? ' selected' : ''}${dateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate()) ? ' calendar-day-disabled' : ''}`}
+                                        className={dayClass}
                                         onClick={() => dateObj >= new Date(today.getFullYear(), today.getMonth(), today.getDate()) && handleDateClick(dateObj)}
+                                        onMouseEnter={() => setHoveredDate(key)}
+                                        onMouseLeave={() => setHoveredDate(null)}
+                                        style={{ position: 'relative' }}
                                     >
                                         <span>{i + 1}</span>
+                                        {hoveredDate === key && (blockedServices.length > 0 || bookings.length > 0) && (
+                                            <div className="calendar-tooltip">
+                                                {blockedServices.length > 0 && (
+                                                    <div><b>Blocked Services:</b>
+                                                        <ol style={{ margin: 0, paddingLeft: 16 }}>
+                                                            {blockedServices.map(s => <li key={s._id}>{s.name}</li>)}
+                                                        </ol>
+
+                                                    </div>
+                                                )}
+                                                {bookings.length > 0 && (
+                                                    <div><b>Bookings:</b>
+                                                        <ol style={{ margin: 0, paddingLeft: 16 }}>
+                                                            {bookings.map(({ service, booking }, idx) => (
+                                                                <li key={idx}>{service.name}</li>
+
+                                                            ))}
+                                                        </ol>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
