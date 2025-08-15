@@ -21,7 +21,6 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
     const [vendorData, setVendorData] = useState({
         name: '',
         businessName: '',
-        cin: '',
         email: '',
         phone: '',
         about: '',
@@ -110,7 +109,7 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
             } else {
                 setError('Invalid username or password');
             }
-        } else {
+        } else if (userType === 'vendor') {
             const result = login(username, password, 'vendor');
             if (result === 'vendor') {
                 setError('');
@@ -118,6 +117,9 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
             } else {
                 setError('Invalid vendor username or password');
             }
+        } else if (userType === 'admin') {
+            // Handle admin login
+            handleAdminLogin(username, password);
         }
     };
 
@@ -155,7 +157,7 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
         e.preventDefault();
         console.log('Vendor registration form data:', vendorData);
 
-        if (!vendorData.name || !vendorData.businessName || !vendorData.cin || !vendorData.email || !vendorData.phone || !vendorData.about || !vendorData.username || !vendorData.password || !vendorData.confirmPassword) {
+        if (!vendorData.name || !vendorData.businessName || !vendorData.email || !vendorData.phone || !vendorData.about || !vendorData.username || !vendorData.password || !vendorData.confirmPassword) {
             setVendorSuccess('');
             setRegError('Please fill all fields');
             return;
@@ -175,8 +177,8 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
         try {
             const success = await register(vendorData, 'vendor');
             if (success) {
-                setVendorSuccess('Vendor registration successful! Redirecting to dashboard...');
-                setTimeout(() => navigate('/vendor-dashboard'), 1000);
+                setVendorSuccess('Vendor registration successful! Please wait for admin approval before you can log in.');
+                // Don't redirect, let them stay on the page
             } else {
                 setVendorSuccess('');
                 setRegError('Registration failed. Please try again.');
@@ -184,6 +186,30 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
         } catch (error) {
             setVendorSuccess('');
             setRegError('Registration failed. Please try again.');
+        }
+    };
+
+    const handleAdminLogin = async (username, password) => {
+        try {
+            const response = await fetch('http://localhost:5001/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('adminSession', JSON.stringify(data.admin));
+                setError('');
+                navigate('/admin');
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Invalid admin credentials');
+            }
+        } catch (error) {
+            setError('Network error. Please try again.');
         }
     };
 
@@ -210,6 +236,7 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
                             <div className="user-type-selection">
                                 <button className={`user-type-btn ${userType === 'customer' ? 'active' : ''}`} onClick={() => setUserType('customer')}>Customer</button>
                                 <button className={`user-type-btn ${userType === 'vendor' ? 'active' : ''}`} onClick={() => setUserType('vendor')}>Vendor</button>
+                                <button className={`user-type-btn ${userType === 'admin' ? 'active' : ''}`} onClick={() => setUserType('admin')}>Admin</button>
                             </div>
                             <form id="login-form-element" onSubmit={handleLogin}>
                                 <div className="form-group">
@@ -231,6 +258,7 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
                             <div className="user-type-selection">
                                 <button className={`user-type-btn ${userType === 'customer' ? 'active' : ''}`} onClick={() => setUserType('customer')}>Customer</button>
                                 <button className={`user-type-btn ${userType === 'vendor' ? 'active' : ''}`} onClick={() => setUserType('vendor')}>Vendor</button>
+                                <button className={`user-type-btn ${userType === 'admin' ? 'active' : ''}`} onClick={() => setUserType('admin')}>Admin</button>
                             </div>
                             {/* Customer Registration Form */}
                             <form id="customer-register-form" className={`register-form${userType === 'customer' ? ' active' : ''}`} onSubmit={handleCustomerRegister} style={{ display: userType === 'customer' ? 'block' : 'none' }}>
@@ -308,11 +336,6 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
                                 <div className="form-group">
                                     <label htmlFor="business-name">Business/Company Name</label>
                                     <input type="text" id="business-name" value={vendorData.businessName} onChange={e => setVendorData({ ...vendorData, businessName: e.target.value })} required />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="cin">CIN (Company Identification Number)</label>
-                                    <input type="text" id="cin" value={vendorData.cin} onChange={e => setVendorData({ ...vendorData, cin: e.target.value })} placeholder="Format: U74999DL2023PTC123456" required />
-                                    <span id="cin-status" className="verification-status">Not Verified</span>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="vendor-email">Email</label>
@@ -414,7 +437,7 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
                                     <input type="url" id="vendor-photo" value={vendorData.photo} onChange={e => setVendorData({ ...vendorData, photo: e.target.value })} />
                                 </div>
                                 <div className="vendor-note">
-                                    <p>After registration, you can access the vendor dashboard to upload your services.</p>
+                                    <p>After registration, please wait for admin approval before you can access the vendor dashboard.</p>
                                 </div>
                                 {regError && <p style={{ color: 'red' }}>{regError}</p>}
                                 {vendorSuccess && <p style={{ color: 'green' }}>{vendorSuccess}</p>}

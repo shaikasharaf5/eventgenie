@@ -37,7 +37,12 @@ const vendorSchema = new mongoose.Schema({
     },
     categories: [{
         type: String
-    }]
+    }],
+    status: {
+        type: String,
+        enum: ['pending', 'accepted', 'rejected'],
+        default: 'pending'
+    }
 }, {
     timestamps: true
 });

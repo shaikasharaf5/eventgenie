@@ -72,7 +72,8 @@ router.post('/register', async (req, res) => {
                 phone: vendor.phone,
                 about: vendor.about,
                 categories: vendor.categories,
-                profilePhoto: vendor.profilePhoto
+                profilePhoto: vendor.profilePhoto,
+                status: vendor.status
             }
         });
     } catch (error) {
@@ -91,6 +92,19 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        // Check if vendor is approved
+        if (vendor.status === 'pending') {
+            return res.status(403).json({ 
+                message: 'Your account is pending approval. Please wait for admin approval.' 
+            });
+        }
+
+        if (vendor.status === 'rejected') {
+            return res.status(403).json({ 
+                message: 'Your account has been rejected. Please contact admin for more information.' 
+            });
+        }
+
         res.json({
             message: 'Login successful',
             vendor: {
@@ -102,7 +116,8 @@ router.post('/login', async (req, res) => {
                 phone: vendor.phone,
                 about: vendor.about,
                 categories: vendor.categories,
-                profilePhoto: vendor.profilePhoto
+                profilePhoto: vendor.profilePhoto,
+                status: vendor.status
             }
         });
     } catch (error) {

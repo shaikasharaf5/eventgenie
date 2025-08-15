@@ -19,6 +19,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/eventgenie'
 app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/vendors', require('./routes/vendorRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.get('/', (req, res) => {
     res.send('EventGenie Backend is Running');

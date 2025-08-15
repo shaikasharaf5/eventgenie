@@ -11,6 +11,7 @@ import LoginRegister from './LoginRegister.jsx';
 import Profile from './Profile.jsx';
 import MyCart from './MyCart.jsx';
 import VendorDashboard from './VendorDashboard.jsx';
+import AdminPortal from './AdminPortal.jsx';
 
 function App() {
   const [servicesList, setServicesList] = useState([]);
@@ -160,10 +161,8 @@ function App() {
           localStorage.removeItem('vendorSession');
           return true;
         } else {
-          setCurrentVendor(data.vendor);
-          localStorage.setItem('vendorSession', JSON.stringify(data.vendor));
-          setCurrentCustomer(null);
-          localStorage.removeItem('customerSession');
+          // For vendors, don't auto-login, just show success message
+          alert('Vendor registration successful! Please wait for admin approval before you can log in.');
           return true;
         }
       } else {
@@ -355,6 +354,7 @@ function App() {
         <Route path="/profile" element={<Profile customer={currentCustomer} logout={logout} toggleService={toggleService} />} />
         <Route path="/mycart" element={<MyCart selectedServices={selectedServices} clearSelectedServices={clearSelectedServices} isLoggedIn={isLoggedIn} addBooking={addBooking} toggleService={toggleService} />} />
         <Route path="/vendor-dashboard" element={<VendorDashboard vendor={currentVendor} isVendorLoggedIn={isVendorLoggedIn} logout={logout} servicesList={servicesList} setServicesList={setServicesList} vendorTab={vendorTab} setVendorTab={setVendorTab} />} />
+        <Route path="/admin" element={<AdminPortal />} />
       </Routes>
       <Footer />
     </>
