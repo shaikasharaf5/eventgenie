@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,14 +10,19 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
+// Check MongoDB URI
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/eventgenie';
 
+if (!process.env.MONGO_URI) {
+    console.warn('⚠️ WARNING: No MONGO_URI found in environment variables. Falling back to local MongoDB.');
+}
+
+// MongoDB Connection
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB Connected'))
+.then(() => console.log(`✅ MongoDB Connected: ${MONGO_URI.includes('localhost') ? 'Local DB' : 'Remote Cluster'}`))
 .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 // Routes
@@ -32,12 +36,12 @@ app.get('/', (req, res) => {
     res.send('EventGenie Backend is Running 🚀');
 });
 
-// For Vercel serverless deployment
+// Export app (useful for testing / serverless)
 module.exports = app;
 
-// Only start server if not in production (for local development)
-if (process.env.NODE_ENV !== 'production') {
+// Start server (both dev & production, but skip in tests)
+if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`🚀 Server running on port ${PORT}`);
     });
 }
