@@ -57,7 +57,8 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
             if (regData.username.length >= 3) {
                 setUsernameChecking(true);
                 try {
-                    const response = await fetch(`http://localhost:5001/api/customers/check-username/${regData.username}`);
+                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+                    const response = await fetch(`${API_BASE_URL}/api/customers/check-username/${regData.username}`);
                     const data = await response.json();
                     setUsernameStatus(data);
                 } catch (error) {
@@ -81,7 +82,8 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
             if (vendorData.username.length >= 3) {
                 setVendorUsernameChecking(true);
                 try {
-                    const response = await fetch(`http://localhost:5001/api/vendors/check-username/${vendorData.username}`);
+                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+                    const response = await fetch(`${API_BASE_URL}/api/vendors/check-username/${vendorData.username}`);
                     const data = await response.json();
                     setVendorUsernameStatus(data);
                 } catch (error) {
@@ -191,7 +193,8 @@ function LoginRegister({ login, register, isLoggedIn, isVendorLoggedIn }) {
 
     const handleAdminLogin = async (username, password) => {
         try {
-            const response = await fetch('http://localhost:5001/api/admin/login', {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

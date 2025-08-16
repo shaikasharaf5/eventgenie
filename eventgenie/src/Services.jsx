@@ -89,7 +89,8 @@ function Services({ selectedServices, toggleService }) {
                 params.append('date', filters.date);
             }
 
-            const url = `http://localhost:5001/api/services${params.toString() ? `?${params.toString()}` : ''}`;
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const url = `${API_BASE_URL}/api/services${params.toString() ? `?${params.toString()}` : ''}`;
             console.log('Fetching services from:', url);
 
             const response = await fetch(url, {

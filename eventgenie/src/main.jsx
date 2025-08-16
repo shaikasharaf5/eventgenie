@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './style.css';
 import Navbar from './Navbar.jsx';
-import Footer from './Footer.Jsx';
+import Footer from './Footer.jsx';
 import Services from './Services.jsx';
 import Home from './Home.jsx';
 import BudgetCalculator from './BudgetCalculator.jsx';
@@ -65,7 +65,8 @@ function App() {
 
   // Fetch services from backend
   useEffect(() => {
-    fetch('http://localhost:5001/api/services')
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+    fetch(`${API_BASE_URL}/api/services`)
       .then(res => res.json())
       .then(data => setServicesList(data))
       .catch(err => console.error('Error fetching services:', err));
@@ -74,8 +75,9 @@ function App() {
   // Login handler with API integration
   const login = async (username, password, type = 'customer') => {
     try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
       const endpoint = type === 'customer' ? '/api/customers/login' : '/api/vendors/login';
-      const response = await fetch(`http://localhost:5001${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +142,7 @@ function App() {
 
       console.log('Prepared user data:', userData);
 
-      const response = await fetch(`http://localhost:5001${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +202,8 @@ function App() {
       if (services.length === 1) {
         // Single service booking
         const service = services[0];
-        const response = await fetch(`http://localhost:5001/api/customers/book-service/${currentCustomer.id}/${service._id}`, {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const response = await fetch(`${API_BASE_URL}/api/customers/book-service/${currentCustomer.id}/${service._id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -232,7 +235,7 @@ function App() {
           bookedForDate: bookingDate
         }));
 
-        const response = await fetch(`http://localhost:5001/api/customers/bulk-book-services/${currentCustomer.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/customers/bulk-book-services/${currentCustomer.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -63,7 +63,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
 
     const fetchVendorServices = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/api/vendors/services/${vendor.id}`);
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/vendors/services/${vendor.id}`);
             if (response.ok) {
                 const vendorServices = await response.json();
                 // Update services list with vendor's services
@@ -79,7 +80,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
 
     const fetchVendorBookings = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/api/vendors/bookings/${vendor.id}`);
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/vendors/bookings/${vendor.id}`);
             if (response.ok) {
                 const vendorBookings = await response.json();
                 setBookings(vendorBookings);
@@ -176,7 +178,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 updateData.password = editProfileData.password;
             }
 
-            const response = await fetch(`http://localhost:5001/api/vendors/profile/${vendor.id}`, {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/vendors/profile/${vendor.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -235,7 +238,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
             let response;
             if (editServiceId) {
                 // Update existing service
-                response = await fetch(`http://localhost:5001/api/vendors/services/${vendor.id}/${editServiceId}`, {
+                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+                response = await fetch(`${API_BASE_URL}/api/vendors/services/${vendor.id}/${editServiceId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -244,7 +248,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                 });
             } else {
                 // Create new service
-                response = await fetch(`http://localhost:5001/api/vendors/services/${vendor.id}`, {
+                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+                response = await fetch(`${API_BASE_URL}/api/vendors/services/${vendor.id}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -318,7 +323,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
         setError('');
 
         try {
-            const response = await fetch(`http://localhost:5001/api/vendors/services/${vendor.id}/${id}`, {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/vendors/services/${vendor.id}/${id}`, {
                 method: 'DELETE',
             });
 
@@ -1368,7 +1374,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                                                             onClick={async () => {
                                                                 try {
                                                                     setLoading(true);
-                                                                    const response = await fetch(`http://localhost:5001/api/vendors/reject-booking/${vendor.id}/${booking.serviceId}/${booking._id}`, {
+                                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/vendors/reject-booking/${vendor.id}/${booking.serviceId}/${booking._id}`, {
                                                                         method: 'POST',
                                                                         headers: {
                                                                             'Content-Type': 'application/json',
@@ -1402,7 +1409,8 @@ export default function VendorDashboard({ vendor, isVendorLoggedIn, logout, serv
                                                             onClick={async () => {
                                                                 try {
                                                                     setLoading(true);
-                                                                    const response = await fetch(`http://localhost:5001/api/vendors/accept-booking/${vendor.id}/${booking.serviceId}/${booking._id}`, {
+                                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/vendors/accept-booking/${vendor.id}/${booking.serviceId}/${booking._id}`, {
                                                                         method: 'POST',
                                                                         headers: {
                                                                             'Content-Type': 'application/json',
@@ -1569,7 +1577,8 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
         }
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5001/api/services/bulk-block', {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const res = await fetch(`${API_BASE_URL}/api/services/bulk-block`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ serviceIds: selectedServiceIds, dates: selectedDates })
@@ -1592,7 +1601,8 @@ function BlockServicesSection({ vendor, myServices, fetchVendorServices }) {
     const unblockServiceDate = async (serviceId, date) => {
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5001/api/services/bulk-unblock', {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const res = await fetch(`${API_BASE_URL}/api/services/bulk-unblock`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ serviceIds: [serviceId], dates: [date] })

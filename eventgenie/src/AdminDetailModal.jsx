@@ -14,7 +14,8 @@ function AdminDetailModal({ isOpen, onClose, entityType, entityId, entityData })
     const fetchEntityDetails = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:5001/api/admin/${entityType}/${entityId}`);
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const response = await fetch(`${API_BASE_URL}/api/admin/${entityType}/${entityId}`);
             if (response.ok) {
                 const data = await response.json();
                 setDetails(data);

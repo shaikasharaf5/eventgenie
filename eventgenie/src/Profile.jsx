@@ -69,7 +69,8 @@ function Profile({ customer, logout, toggleService }) {
                 setBookingsLoading(true);
                 console.log('Fetching detailed bookings for customer:', customer.id);
 
-                const response = await fetch(`http://localhost:5001/api/customers/detailed-bookings/${customer.id}`);
+                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/customers/detailed-bookings/${customer.id}`);
                 console.log('Detailed bookings response status:', response.status);
 
                 if (response.ok) {
@@ -130,7 +131,8 @@ function Profile({ customer, logout, toggleService }) {
                 delete updateData.password;
             }
 
-            const response = await fetch(`http://localhost:5001/api/customers/profile/${customer.id}`, {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/customers/profile/${customer.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,7 +191,8 @@ function Profile({ customer, logout, toggleService }) {
 
         setReviewLoading(true);
         try {
-            const response = await fetch(`http://localhost:5001/api/customers/review/${customer.id}/${selectedBookingForReview.serviceId}`, {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/customers/review/${customer.id}/${selectedBookingForReview.serviceId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,7 +204,8 @@ function Profile({ customer, logout, toggleService }) {
                 showPopup('Review submitted successfully!', 'success');
                 closeReviewModal();
                 // Refresh bookings to update review status
-                const bookingsResponse = await fetch(`http://localhost:5001/api/customers/detailed-bookings/${customer.id}`);
+                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const bookingsResponse = await fetch(`${API_BASE_URL}/api/customers/detailed-bookings/${customer.id}`);
                 if (bookingsResponse.ok) {
                     const updatedBookings = await bookingsResponse.json();
                     setDetailedBookings(updatedBookings);
@@ -1145,7 +1149,8 @@ function Profile({ customer, logout, toggleService }) {
                                                                                             onClick={async () => {
                                                                                                 try {
                                                                                                     setLoading(true);
-                                                                                                    const response = await fetch(`http://localhost:5001/api/customers/cancel-booking/${booking.serviceId}/${booking.bookingId}`, {
+                                                                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+                const response = await fetch(`${API_BASE_URL}/api/customers/cancel-booking/${booking.serviceId}/${booking.bookingId}`, {
                                                                                                         method: 'POST',
                                                                                                     });
                                                                                                     if (response.ok) {

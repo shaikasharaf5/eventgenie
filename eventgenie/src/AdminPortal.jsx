@@ -40,7 +40,8 @@ function AdminPortal() {
         setError('');
         
         try {
-            const response = await fetch('http://localhost:5001/api/admin/login', {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,12 +79,13 @@ function AdminPortal() {
 
     const fetchAllData = async () => {
         try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
             const [vendorsResponse, pendingVendorsResponse, customersResponse, servicesResponse, bookingsResponse] = await Promise.all([
-                fetch('http://localhost:5001/api/admin/vendors'),
-                fetch('http://localhost:5001/api/admin/vendors/pending'),
-                fetch('http://localhost:5001/api/admin/customers'),
-                fetch('http://localhost:5001/api/admin/services'),
-                fetch('http://localhost:5001/api/admin/bookings')
+                fetch(`${API_BASE_URL}/api/admin/vendors`),
+                fetch(`${API_BASE_URL}/api/admin/vendors/pending`),
+                fetch(`${API_BASE_URL}/api/admin/customers`),
+                fetch(`${API_BASE_URL}/api/admin/services`),
+                fetch(`${API_BASE_URL}/api/admin/bookings`)
             ]);
 
             if (vendorsResponse.ok) {
@@ -117,7 +119,8 @@ function AdminPortal() {
 
     const approveVendor = async (vendorId) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/admin/vendors/${vendorId}/approve`, {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/admin/vendors/${vendorId}/approve`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -142,7 +145,8 @@ function AdminPortal() {
         }
 
         try {
-            const response = await fetch(`http://localhost:5001/api/admin/vendors/${vendorId}/reject`, {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+            const response = await fetch(`${API_BASE_URL}/api/admin/vendors/${vendorId}/reject`, {
                 method: 'PUT',
             });
 
